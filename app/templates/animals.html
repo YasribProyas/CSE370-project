@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Animals - Havnhut{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            {% if animal_type %}
+            {{ animal_type }} Animals
+            {% else %}
+            All Animals
+            {% endif %}
+        </h1>
+
+        <!-- Filter -->
+        <div class="mb-4">
+            <div class="btn-group" role="group">
+                <a href="{{ url_for('main.animals') }}"
+                    class="btn btn-outline-primary {% if not animal_type %}active{% endif %}">All</a>
+                <a href="{{ url_for('main.animals', type='Cat') }}"
+                    class="btn btn-outline-primary {% if animal_type == 'Cat' %}active{% endif %}">Cat</a>
+                <a href="{{ url_for('main.animals', type='Dog') }}"
+                    class="btn btn-outline-primary {% if animal_type == 'Dog' %}active{% endif %}">Dog</a>
+                <a href="{{ url_for('main.animals', type='Bird') }}"
+                    class="btn btn-outline-primary {% if animal_type == 'Bird' %}active{% endif %}">Bird</a>
+                <a href="{{ url_for('main.animals', type='Fish') }}"
+                    class="btn btn-outline-primary {% if animal_type == 'Fish' %}active{% endif %}">Fish</a>
+                <a href="{{ url_for('main.animals', type='Other') }}"
+                    class="btn btn-outline-primary {% if animal_type == 'Other' %}active{% endif %}">Other</a>
+            </div>
+        </div>
+
+        {% if animals %}
+        <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
+            {% for animal in animals %}
+            <div class="col">
+                <div class="card featured-card h-100">
+                    {% if animal.img_url %}
+                    <img src="{{ animal.img_url }}" class="card-img-top" alt="{{ animal.title }}"
+                        style="height: 250px; object-fit: cover;">
+                    {% else %}
+                    <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center"
+                        style="height: 250px;">
+                        <span class="text-white display-3">{{ animal.type }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ animal.title or 'No Name' }}</h5>
+                        <p class="card-text">
+                            <strong>Type:</strong> {{ animal.type }}<br>
+                            <strong>Breed:</strong> {{ animal.breed or 'Mixed' }}<br>
+                            <strong>Age:</strong> {{ animal.age or 'Unknown' }} years<br>
+                            <strong>Sex:</strong> {{ animal.sex or 'Unknown' }}
+                        </p>
+                        <a href="{{ url_for('main.animal_detail', animal_id=animal.id) }}"
+                            class="btn btn-primary w-100">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            No animals found in this category.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

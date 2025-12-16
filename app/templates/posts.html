@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Posts - Havnhut{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">Community Posts</h1>
+
+        {% if posts %}
+        <div class="row g-4">
+            {% for post in posts %}
+            <div class="col-12">
+                <div class="card post-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h5 class="card-title mb-1">{{ post.author_name or 'Admin' }}</h5>
+                                <p class="text-muted small mb-0">
+                                    {{ post.date }}
+                                    {% if post.time %}
+                                    • {{ post.time }}
+                                    {% endif %}
+                                </p>
+                            </div>
+                            {% if session.is_admin %}
+                            <span class="badge bg-success">Admin Post</span>
+                            {% endif %}
+                        </div>
+
+                        {% if post.img_url %}
+                        <img src="{{ post.img_url }}" class="img-fluid rounded mb-3" alt="Post image"
+                            style="max-height: 400px; object-fit: cover; width: 100%;">
+                        {% endif %}
+
+                        <p class="card-text">{{ post.content }}</p>
+
+                        <div class="d-flex gap-3 mt-3">
+                            <span class="text-muted">
+                                <i class="bi bi-heart"></i> {{ post.like_count or 0 }} Likes
+                            </span>
+                            <span class="text-muted">
+                                <i class="bi bi-chat"></i> {{ post.comment_count or 0 }} Comments
+                            </span>
+                        </div>
+
+                        <a href="{{ url_for('fahim.post_detail', post_id=post.id) }}"
+                            class="btn btn-primary btn-sm mt-3">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            No posts available yet.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

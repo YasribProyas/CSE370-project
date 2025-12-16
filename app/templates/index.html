@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Havnhut{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="p-5 bg-primary text-white rounded-3 text-center">
+            <h1 class="display-4">Welcome to Havnhut</h1>
+            <p class="lead">Find your perfect companion and give them a loving home</p>
+            <a href="{{ url_for('main.animals') }}" class="btn btn-light btn-lg mt-3">Browse Animals</a>
+        </div>
+    </div>
+</div>
+
+<!-- Categories -->
+<div class="row mb-5">
+    <div class="col-12">
+        <h2 class="mb-4">Categories</h2>
+        <div class="d-flex flex-wrap gap-3">
+            {% for category in categories %}
+            <a href="{{ url_for('main.animals', type=category) }}" class="text-decoration-none">
+                <div class="badge bg-secondary category-badge p-3 fs-5">
+                    {{ category }}
+                    {% if category_counts.get(category, 0) > 0 %}
+                    <span class="badge bg-primary">{{ category_counts[category] }}</span>
+                    {% endif %}
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Featured Animals -->
+<div class="row mb-5">
+    <div class="col-12">
+        <h2 class="mb-4">Featured Animals</h2>
+        {% if animals %}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-5 g-4">
+            {% for animal in animals %}
+            <div class="col">
+                <div class="card featured-card h-100">
+                    {% if animal.img_url %}
+                    <img src="{{ animal.img_url }}" class="card-img-top" alt="{{ animal.title }}"
+                        style="height: 200px; object-fit: cover;">
+                    {% else %}
+                    <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center"
+                        style="height: 200px;">
+                        <span class="text-white fs-1">{{ animal.type }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ animal.title or 'No Name' }}</h5>
+                        <p class="card-text">
+                            <small class="text-muted">
+                                {{ animal.type }} • {{ animal.breed or 'Mixed' }}
+                            </small>
+                        </p>
+                        <a href="{{ url_for('main.animal_detail', animal_id=animal.id) }}"
+                            class="btn btn-sm btn-outline-primary w-100">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            No animals available for adoption at the moment. Check back soon!
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Recent Posts -->
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Recent Posts</h2>
+            <a href="{{ url_for('fahim.posts') }}" class="btn btn-outline-primary">View All</a>
+        </div>
+        {% if posts %}
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            {% for post in posts[:4] %}
+            <div class="col">
+                <div class="card post-card h-100">
+                    {% if post.img_url %}
+                    <img src="{{ post.img_url }}" class="card-img-top" alt="Post image"
+                        style="height: 200px; object-fit: cover;">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">Post by {{ post.author_name or 'Admin' }}</h5>
+                        <p class="card-text">{{ post.content[:150] }}{% if post.content|length > 150 %}...{% endif %}
+                        </p>
+                        <p class="text-muted small">
+                            <i class="bi bi-calendar"></i> {{ post.date }}
+                            {% if post.time %}
+                            • {{ post.time }}
+                            {% endif %}
+                        </p>
+                        <a href="{{ url_for('fahim.post_detail', post_id=post.id) }}"
+                            class="btn btn-sm btn-primary">Read
+                            More</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            No posts available yet.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

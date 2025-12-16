@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}{{ animal.title or 'Animal' }} - Havnhut{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <!-- Back Button -->
+        <a href="{{ url_for('main.animals', type=animal.type) }}" class="btn btn-link mb-3">
+            <i class="bi bi-arrow-left"></i> Back to {{ animal.type }} Animals
+        </a>
+
+        <div class="card">
+            <div class="row g-0">
+                <div class="col-md-5">
+                    {% if animal.img_url %}
+                    <img src="{{ animal.img_url }}" class="img-fluid rounded-start h-100" alt="{{ animal.title }}"
+                        style="object-fit: cover;">
+                    {% else %}
+                    <div class="bg-secondary d-flex align-items-center justify-content-center h-100 rounded-start">
+                        <span class="text-white display-1">{{ animal.type }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-7">
+                    <div class="card-body p-4">
+                        <h2 class="card-title mb-4">{{ animal.title or 'No Name' }}</h2>
+
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <p><strong>Type:</strong> {{ animal.type }}</p>
+                                <p><strong>Breed:</strong> {{ animal.breed or 'Mixed' }}</p>
+                                <p><strong>Color:</strong> {{ animal.color or 'Various' }}</p>
+                            </div>
+                            <div class="col-6">
+                                <p><strong>Age:</strong> {{ animal.age or 'Unknown' }} years</p>
+                                <p><strong>Sex:</strong> {{ animal.sex or 'Unknown' }}</p>
+                                <p><strong>Size:</strong> {{ animal.size or 'Medium' }}</p>
+                            </div>
+                        </div>
+
+                        {% if animal.weight %}
+                        <p><strong>Weight:</strong> {{ animal.weight }} kg</p>
+                        {% endif %}
+
+                        {% if animal.training %}
+                        <div class="mb-3">
+                            <h5>Training:</h5>
+                            <p>{{ animal.training }}</p>
+                        </div>
+                        {% endif %}
+
+                        {% if animal.description %}
+                        <div class="mb-3">
+                            <h5>Description:</h5>
+                            <p>{{ animal.description }}</p>
+                        </div>
+                        {% endif %}
+
+                        {% if animal.diet %}
+                        <div class="mb-3">
+                            <h5>Diet:</h5>
+                            <p>{{ animal.diet }}</p>
+                        </div>
+                        {% endif %}
+
+                        {% if animal.behaviour %}
+                        <div class="mb-3">
+                            <h5>Behaviour:</h5>
+                            <p>{{ animal.behaviour }}</p>
+                        </div>
+                        {% endif %}
+
+                        <div class="mt-4">
+                            {% if session.user_id %}
+                            <button class="btn btn-success btn-lg">
+                                <i class="bi bi-heart"></i> Request Adoption
+                            </button>
+                            {% else %}
+                            <a href="{{ url_for('auth.login') }}" class="btn btn-success btn-lg">
+                                <i class="bi bi-heart"></i> Login to Adopt
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Donations - Havnhut{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">Donation Statistics</h1>
+
+        <!-- Total Donations Card -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card text-white bg-success mb-3">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Total Donations Collected</h5>
+                        <h1 class="display-3">{{ "%.2f"|format(total_donations) }} taka</h1>
+                        <p class="card-text">From {{ donation_count }} generous donors</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card text-white bg-primary mb-3">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Number of Donations</h5>
+                        <h1 class="display-3">{{ donation_count }}</h1>
+                        <p class="card-text">Thank you for your support!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Call to Action -->
+        <div class="alert alert-info text-center mb-4">
+            <h4>Help Us Make a Difference!</h4>
+            <p>Your donations help us provide food, shelter, and medical care for animals in need.</p>
+            {% if session.user_id %}
+            <button class="btn btn-success btn-lg">Make a Donation</button>
+            {% else %}
+            <a href="{{ url_for('auth.login') }}" class="btn btn-success btn-lg">Login to Donate</a>
+            {% endif %}
+        </div>
+
+        <!-- Recent Donations -->
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Recent Donations</h4>
+            </div>
+            <div class="card-body">
+                {% if recent_donations %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Donor</th>
+                                <th>Amount</th>
+                                <th>Method</th>
+                                <th>Transaction ID</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for donation in recent_donations %}
+                            <tr>
+                                <td>
+                                    {% if donation.donor_name %}
+                                    <strong>{{ donation.donor_name }}</strong>
+                                    {% else %}
+                                    <em class="text-muted">Anonymous</em>
+                                    {% endif %}
+                                </td>
+                                <td><span class="badge bg-success">{{ "%.2f"|format(donation.amount) }} taka</span></td>
+                                <td>{{ donation.method or 'N/A' }}</td>
+                                <td><small class="text-muted">{{ donation.trx_id or 'N/A' }}</small></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center text-muted py-4">
+                    <p>No donations yet. Be the first to donate!</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Impact Section -->
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-heart-fill text-danger" style="font-size: 3rem;"></i>
+                        <h5 class="card-title mt-3">Medical Care</h5>
+                        <p class="card-text">Your donations provide essential veterinary care for rescued animals.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-house-fill text-primary" style="font-size: 3rem;"></i>
+                        <h5 class="card-title mt-3">Shelter</h5>
+                        <p class="card-text">Help us maintain safe and comfortable shelter facilities.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-egg-fried text-warning" style="font-size: 3rem;"></i>
+                        <h5 class="card-title mt-3">Nutrition</h5>
+                        <p class="card-text">Ensure all animals receive proper nutrition and care.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
