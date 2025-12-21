@@ -2,6 +2,8 @@ from flask import render_template
 from app.shaj import shaj_bp
 from app.db import execute_query
 
+# Comment from my laptop
+
 @shaj_bp.route('/donation')
 def donation():
     result = execute_query("SELECT SUM(amount) as total FROM Donation", fetch=True)
