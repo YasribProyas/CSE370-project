@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Make a Donation - Havnhut{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <!-- Header -->
+        <div class="text-center mb-4">
+            <h1 class="display-5">Make a Donation</h1>
+            <p class="lead text-muted">Your contribution helps us care for animals in need</p>
+        </div>
+
+        <!-- Impact Info Card -->
+        <div class="card mb-4 border-primary">
+            <div class="card-body">
+                <h5 class="card-title text-primary">
+                    <i class="bi bi-info-circle-fill"></i> Your Impact
+                </h5>
+                <p class="card-text mb-2">Every donation makes a difference:</p>
+                <ul class="mb-0">
+                    <li><strong>500 taka</strong> - Provides food for 5 animals for a week</li>
+                    <li><strong>1,000 taka</strong> - Covers vaccination for 2 animals</li>
+                    <li><strong>2,500 taka</strong> - Supports medical treatment for a rescued animal</li>
+                    <li><strong>5,000+ taka</strong> - Helps maintain shelter facilities</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Donation Form -->
+        <div class="card shadow">
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('shaj.donate') }}">
+                    <!-- Amount -->
+                    <div class="mb-4">
+                        <label for="amount" class="form-label fw-bold">Donation Amount (Taka) *</label>
+                        <input type="number" class="form-control form-control-lg" id="amount" name="amount"
+                            placeholder="Enter amount" min="1" step="0.01" required>
+                        <div class="form-text">Minimum donation: 1 taka</div>
+                    </div>
+
+                    <!-- Quick Amount Buttons -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Quick Select:</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="button" class="btn btn-outline-primary quick-amount" data-amount="500">500 ৳</button>
+                            <button type="button" class="btn btn-outline-primary quick-amount" data-amount="1000">1,000 ৳</button>
+                            <button type="button" class="btn btn-outline-primary quick-amount" data-amount="2500">2,500 ৳</button>
+                            <button type="button" class="btn btn-outline-primary quick-amount" data-amount="5000">5,000 ৳</button>
+                            <button type="button" class="btn btn-outline-primary quick-amount" data-amount="10000">10,000 ৳</button>
+                        </div>
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div class="mb-4">
+                        <label for="method" class="form-label fw-bold">Payment Method *</label>
+                        <select class="form-select form-select-lg" id="method" name="method" required>
+                            <option value="">Select payment method</option>
+                            <option value="bKash">bKash</option>
+                            <option value="Nagad">Nagad</option>
+                            <option value="Rocket">Rocket</option>
+                            <option value="Bank Transfer">Bank Transfer</option>
+                            <option value="Credit Card">Credit Card</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <!-- Transaction ID -->
+                    <div class="mb-4">
+                        <label for="trx_id" class="form-label fw-bold">Transaction ID *</label>
+                        <input type="text" class="form-control form-control-lg" id="trx_id" name="trx_id"
+                            placeholder="Enter transaction/reference ID" required>
+                        <div class="form-text">Enter the transaction ID from your payment confirmation</div>
+                    </div>
+
+                    <!-- Payment Instructions -->
+                    <div class="alert alert-info mb-4">
+                        <h6 class="alert-heading">
+                            <i class="bi bi-info-circle"></i> Payment Instructions
+                        </h6>
+                        <p class="mb-2"><strong>bKash/Nagad/Rocket:</strong></p>
+                        <ul class="mb-2">
+                            <li>Send money to: <strong>01712345678</strong></li>
+                            <li>Enter the transaction ID above</li>
+                        </ul>
+                        <p class="mb-2"><strong>Bank Transfer:</strong></p>
+                        <ul class="mb-0">
+                            <li>Account: Havnhut Foundation</li>
+                            <li>Bank: XYZ Bank</li>
+                            <li>Account No: 1234567890</li>
+                        </ul>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-heart-fill"></i> Complete Donation
+                        </button>
+                        <a href="{{ url_for('shaj.donation') }}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Security Notice -->
+        <div class="text-center mt-4">
+            <p class="text-muted small">
+                <i class="bi bi-shield-check"></i>
+                Your donation is secure. We value your privacy and handle all transactions with care.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Quick amount selection
+    document.querySelectorAll('.quick-amount').forEach(button => {
+        button.addEventListener('click', function() {
+            const amount = this.getAttribute('data-amount');
+            document.getElementById('amount').value = amount;
+            
+            // Visual feedback
+            document.querySelectorAll('.quick-amount').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            this.classList.add('active');
+        });
+    });
+</script>
+{% endblock %}

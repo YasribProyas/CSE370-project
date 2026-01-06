@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}My Adoptions - Havnhut{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>My Adoption Requests</h1>
+            <a href="{{ url_for('main.animals') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Browse More Animals
+            </a>
+        </div>
+
+        {% if adoptions %}
+        <div class="row g-4">
+            {% for adoption in adoptions %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm">
+                    <!-- Animal Image -->
+                    {% if adoption.img_url %}
+                    <img src="{{ adoption.img_url }}" class="card-img-top" alt="{{ adoption.title }}" style="height: 200px; object-fit: cover;">
+                    {% else %}
+                    <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                        <span class="text-white display-4">{{ adoption.type }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Card Header with Status -->
+                    <div class="card-header {% if adoption.approved %}bg-success{% else %}bg-warning{% endif %} text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">{{ adoption.title or 'No Name' }}</h5>
+                            {% if adoption.approved %}
+                            <i class="bi bi-check-circle-fill" title="Approved"></i>
+                            {% else %}
+                            <i class="bi bi-clock-fill" title="Pending"></i>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <!-- Animal Details -->
+                        <p class="card-text mb-2">
+                            <i class="bi bi-tag text-primary"></i> <strong>Type:</strong> {{ adoption.type }}<br>
+                            <i class="bi bi-award text-primary"></i> <strong>Breed:</strong> {{ adoption.breed or 'Mixed' }}<br>
+                            <i class="bi bi-calendar text-primary"></i> <strong>Age:</strong> {{ adoption.age or 'Unknown' }} years<br>
+                            <i class="bi bi-gender-ambiguous text-primary"></i> <strong>Sex:</strong> {{ adoption.sex or 'Unknown' }}
+                        </p>
+
+                        <hr>
+
+                        <!-- Adoption Details -->
+                        <p class="mb-2">
+                            <i class="bi bi-calendar-check text-success"></i> 
+                            <strong>Request Date:</strong> {{ adoption.adoption_date }}
+                        </p>
+
+                        <!-- Status Badge -->
+                        <div class="mb-3">
+                            {% if adoption.approved %}
+                            <span class="badge bg-success w-100 py-2">
+                                <i class="bi bi-check-circle"></i> Approved - Delivery in Progress
+                            </span>
+                            {% else %}
+                            <span class="badge bg-warning text-dark w-100 py-2">
+                                <i class="bi bi-hourglass-split"></i> Pending Review
+                            </span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Additional Info for Approved Adoptions -->
+                        {% if adoption.approved %}
+                        <div class="alert alert-success mb-0">
+                            <small>
+                                <i class="bi bi-info-circle"></i> Your adoption has been approved! 
+                                We will contact you soon for delivery arrangements.
+                            </small>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Card Footer with Actions -->
+                    <div class="card-footer bg-light">
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('main.animal_detail', animal_id=adoption.animal_id) }}" 
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i> View Animal Details
+                            </a>
+                            
+                            {% if not adoption.approved %}
+                            <!-- Cancel Button for Pending Requests -->
+                            <form method="POST" 
+                                  action="{{ url_for('shaj.cancel_adoption', animal_id=adoption.animal_id) }}"
+                                  onsubmit="return confirm('Are you sure you want to cancel this adoption request?');">
+                                <button type="submit" class="btn btn-sm btn-danger w-100">
+                                    <i class="bi bi-x-circle"></i> Cancel Request
+                                </button>
+                            </form>
+                            {% else %}
+                            <button class="btn btn-sm btn-secondary" disabled>
+                                <i class="bi bi-lock"></i> Cannot Cancel (Approved)
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card text-center border-primary">
+                    <div class="card-body">
+                        <h2 class="text-primary">{{ adoptions|length }}</h2>
+                        <p class="mb-0">Total Requests</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center border-warning">
+                    <div class="card-body">
+                        <h2 class="text-warning">{{ adoptions|selectattr('approved', 'false')|list|length }}</h2>
+                        <p class="mb-0">Pending</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center border-success">
+                    <div class="card-body">
+                        <h2 class="text-success">{{ adoptions|selectattr('approved', 'true')|list|length }}</h2>
+                        <p class="mb-0">Approved</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% else %}
+        <!-- No Adoptions -->
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-heart-fill text-muted" style="font-size: 5rem;"></i>
+                <h3 class="mt-4">No Adoption Requests Yet</h3>
+                <p class="text-muted mb-4">You haven't requested to adopt any animals. Browse our available animals and find your perfect companion!</p>
+                <a href="{{ url_for('main.animals') }}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-search"></i> Browse Available Animals
+                </a>
+            </div>
+        </div>
+
+        <!-- Why Adopt Section -->
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card text-center border-0">
+                    <div class="card-body">
+                        <i class="bi bi-heart text-danger" style="font-size: 3rem;"></i>
+                        <h5 class="card-title mt-3">Save a Life</h5>
+                        <p class="card-text small">Give a rescued animal a loving home and second chance.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center border-0">
+                    <div class="card-body">
+                        <i class="bi bi-people text-primary" style="font-size: 3rem;"></i>
+                        <h5 class="card-title mt-3">Join Our Community</h5>
+                        <p class="card-text small">Become part of a caring community of pet lovers.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center border-0">
+                    <div class="card-body">
+                        <i class="bi bi-shield-check text-success" style="font-size: 3rem;"></i>
+                        <h5 class="card-title mt-3">Ongoing Support</h5>
+                        <p class="card-text small">Get continuous support and guidance from our team.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Help Section -->
+        <div class="card mt-4 bg-light">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-question-circle"></i> Need Help?
+                </h5>
+                <p class="card-text mb-2">If you have questions about your adoption request or need assistance:</p>
+                <ul class="mb-0">
+                    <li>Contact us at: <strong>info@havnhut.com</strong></li>
+                    <li>Call us at: <strong>01712-345678</strong></li>
+                    <li>Visit our office during business hours</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

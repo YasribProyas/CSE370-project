@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+
+{% block title %}Adopt {{ animal.title }} - Havnhut{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-9">
+        <!-- Header -->
+        <div class="text-center mb-4">
+            <h1 class="display-5">Adoption Request</h1>
+            <p class="lead text-muted">Complete the form below to adopt {{ animal.title }}</p>
+        </div>
+
+        <!-- Animal Info Card -->
+        <div class="card mb-4 bg-light">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-3 text-center">
+                        {% if animal.img_url %}
+                        <img src="{{ animal.img_url }}" class="img-fluid rounded" alt="{{ animal.title }}" style="max-height: 150px; object-fit: cover;">
+                        {% else %}
+                        <div class="bg-secondary text-white rounded d-flex align-items-center justify-content-center" style="height: 150px;">
+                            <span class="display-4">{{ animal.type }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-9">
+                        <h4 class="mb-2">{{ animal.title or 'No Name' }}</h4>
+                        <p class="mb-1">
+                            <strong>Type:</strong> {{ animal.type }} | 
+                            <strong>Breed:</strong> {{ animal.breed or 'Mixed' }} | 
+                            <strong>Age:</strong> {{ animal.age or 'Unknown' }} years
+                        </p>
+                        <p class="mb-0">
+                            <strong>Sex:</strong> {{ animal.sex or 'Unknown' }} | 
+                            <strong>Size:</strong> {{ animal.size or 'Medium' }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Adoption Form -->
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-clipboard-check"></i> Adoption Information
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('shaj.adopt_animal', animal_id=animal.id) }}">
+                    <!-- Personal Information Section -->
+                    <h6 class="text-primary mb-3">Personal Information</h6>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="full_name" class="form-label fw-bold">Full Name *</label>
+                            <input type="text" class="form-control" id="full_name" name="full_name"
+                                value="{{ adopter.full_name if adopter else '' }}"
+                                placeholder="Enter your full name" required>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="phone_no" class="form-label fw-bold">Phone Number *</label>
+                            <input type="tel" class="form-control" id="phone_no" name="phone_no"
+                                value="{{ adopter.phone_no if adopter else '' }}"
+                                placeholder="e.g., 01712345678" pattern="[0-9]{11}" required>
+                            <div class="form-text">11-digit phone number</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="address" class="form-label fw-bold">Complete Address *</label>
+                        <textarea class="form-control" id="address" name="address" rows="3"
+                            placeholder="Enter your complete address for delivery" required>{{ adopter.address if adopter else '' }}</textarea>
+                        <div class="form-text">Please provide detailed address including area, district</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="marital_status" class="form-label fw-bold">Marital Status *</label>
+                            <select class="form-select" id="marital_status" name="marital_status" required>
+                                <option value="">Select marital status</option>
+                                <option value="Single" {% if adopter and adopter.marital_status == 'Single' %}selected{% endif %}>Single</option>
+                                <option value="Married" {% if adopter and adopter.marital_status == 'Married' %}selected{% endif %}>Married</option>
+                                <option value="Divorced" {% if adopter and adopter.marital_status == 'Divorced' %}selected{% endif %}>Divorced</option>
+                                <option value="Widowed" {% if adopter and adopter.marital_status == 'Widowed' %}selected{% endif %}>Widowed</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-4">
+                            <label for="job" class="form-label fw-bold">Occupation *</label>
+                            <input type="text" class="form-control" id="job" name="job"
+                                value="{{ adopter.job if adopter else '' }}"
+                                placeholder="Enter your occupation" required>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Payment Section -->
+                    <h6 class="text-primary mb-3">
+                        <i class="bi bi-cash-coin"></i> Delivery Charge Payment
+                    </h6>
+
+                    <div class="alert alert-info mb-4">
+                        <h6 class="alert-heading">
+                            <i class="bi bi-info-circle"></i> Delivery Charge: 100 Taka
+                        </h6>
+                        <p class="mb-0">A delivery charge of 100 taka is required to process your adoption request and deliver the animal safely to your address.</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="payment_method" class="form-label fw-bold">Payment Method *</label>
+                        <select class="form-select form-select-lg" id="payment_method" name="payment_method" required>
+                            <option value="">Select payment method</option>
+                            <option value="bKash">bKash</option>
+                            <option value="Nagad">Nagad</option>
+                            <option value="Rocket">Rocket</option>
+                            <option value="Credit Card">Credit Card</option>
+                            <option value="Cash on Delivery">Cash on Delivery (Pay when animal arrives)</option>
+                        </select>
+                    </div>
+
+                    <!-- Transaction ID (shown/hidden based on payment method) -->
+                    <div class="mb-4" id="trx_id_field">
+                        <label for="trx_id" class="form-label fw-bold">Transaction ID</label>
+                        <input type="text" class="form-control form-control-lg" id="trx_id" name="trx_id"
+                            placeholder="Enter transaction/reference ID">
+                        <div class="form-text">Required for bKash, Nagad, Rocket, and Card payments</div>
+                    </div>
+
+                    <!-- Payment Instructions -->
+                    <div class="alert alert-warning" id="payment_instructions" style="display: none;">
+                        <h6 class="alert-heading">
+                            <i class="bi bi-exclamation-triangle"></i> Payment Instructions
+                        </h6>
+                        <div id="bkash_instructions" style="display: none;">
+                            <p class="mb-1"><strong>bKash Payment:</strong></p>
+                            <ul class="mb-0">
+                                <li>Send 100 taka to: <strong>01712345678</strong></li>
+                                <li>Enter the transaction ID above</li>
+                            </ul>
+                        </div>
+                        <div id="nagad_instructions" style="display: none;">
+                            <p class="mb-1"><strong>Nagad Payment:</strong></p>
+                            <ul class="mb-0">
+                                <li>Send 100 taka to: <strong>01712345678</strong></li>
+                                <li>Enter the transaction ID above</li>
+                            </ul>
+                        </div>
+                        <div id="rocket_instructions" style="display: none;">
+                            <p class="mb-1"><strong>Rocket Payment:</strong></p>
+                            <ul class="mb-0">
+                                <li>Send 100 taka to: <strong>017123456789</strong></li>
+                                <li>Enter the transaction ID above</li>
+                            </ul>
+                        </div>
+                        <div id="card_instructions" style="display: none;">
+                            <p class="mb-1"><strong>Card Payment:</strong></p>
+                            <ul class="mb-0">
+                                <li>Process payment through our payment gateway</li>
+                                <li>Enter the transaction ID received</li>
+                            </ul>
+                        </div>
+                        <div id="cod_instructions" style="display: none;">
+                            <p class="mb-1"><strong>Cash on Delivery:</strong></p>
+                            <ul class="mb-0">
+                                <li>Pay 100 taka when the animal is delivered</li>
+                                <li>Have exact change ready</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Terms and Conditions -->
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="terms" required>
+                            <label class="form-check-label" for="terms">
+                                I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">terms and conditions</a> of adoption *
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Submit Buttons -->
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-heart-fill"></i> Submit Adoption Request
+                        </button>
+                        <a href="{{ url_for('main.animal_detail', animal_id=animal.id) }}" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Info Card -->
+        <div class="card mt-4 border-primary">
+            <div class="card-body">
+                <h6 class="text-primary">
+                    <i class="bi bi-info-circle-fill"></i> What Happens Next?
+                </h6>
+                <ol class="mb-0">
+                    <li>Your adoption request will be reviewed by our team</li>
+                    <li>We will verify your payment (if online payment)</li>
+                    <li>You will receive a confirmation within 24-48 hours</li>
+                    <li>The animal will be delivered to your address</li>
+                    <li>Our team will provide post-adoption support</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Terms and Conditions Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Terms and Conditions for Adoption</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>1. Adoption Commitment</h6>
+                <p>By adopting this animal, you commit to providing proper care, nutrition, and medical attention for its entire life.</p>
+                
+                <h6>2. Delivery Charge</h6>
+                <p>A non-refundable delivery charge of 100 taka is required to cover transportation and handling costs.</p>
+                
+                <h6>3. Health and Vaccination</h6>
+                <p>The animal has been examined and vaccinated. You are responsible for future veterinary care.</p>
+                
+                <h6>4. Return Policy</h6>
+                <p>If you are unable to care for the animal, please contact us for assistance. Do not abandon the animal.</p>
+                
+                <h6>5. Verification</h6>
+                <p>We reserve the right to verify your information and may conduct a home visit if necessary.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Handle payment method change
+    document.getElementById('payment_method').addEventListener('change', function() {
+        const method = this.value;
+        const trxField = document.getElementById('trx_id_field');
+        const trxInput = document.getElementById('trx_id');
+        const instructions = document.getElementById('payment_instructions');
+        
+        // Hide all instruction sections
+        document.querySelectorAll('[id$="_instructions"]').forEach(el => el.style.display = 'none');
+        
+        if (method === 'Cash on Delivery') {
+            trxField.style.display = 'none';
+            trxInput.removeAttribute('required');
+            instructions.style.display = 'block';
+            document.getElementById('cod_instructions').style.display = 'block';
+        } else if (method) {
+            trxField.style.display = 'block';
+            trxInput.setAttribute('required', 'required');
+            instructions.style.display = 'block';
+            
+            // Show relevant instructions
+            if (method === 'bKash') {
+                document.getElementById('bkash_instructions').style.display = 'block';
+            } else if (method === 'Nagad') {
+                document.getElementById('nagad_instructions').style.display = 'block';
+            } else if (method === 'Rocket') {
+                document.getElementById('rocket_instructions').style.display = 'block';
+            } else if (method === 'Credit Card') {
+                document.getElementById('card_instructions').style.display = 'block';
+            }
+        } else {
+            trxField.style.display = 'none';
+            instructions.style.display = 'none';
+        }
+    });
+</script>
+{% endblock %}

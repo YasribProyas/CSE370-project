@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% block title %}Consultants - Havnhut{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Our Expert Consultants</h1>
+            <a href="{{ url_for('shaj.my_consultations') }}" class="btn btn-outline-primary">
+                <i class="bi bi-calendar-event"></i> My Appointments
+            </a>
+        </div>
+
+        <!-- Info Banner -->
+        <div class="alert alert-info mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h5 class="alert-heading">
+                        <i class="bi bi-info-circle-fill"></i> Professional Consultation Services
+                    </h5>
+                    <p class="mb-0">Book a consultation with our expert consultants for pet care advice, adoption guidance, and behavioral consultations. Only 50 taka per session!</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="badge bg-success fs-4 p-3">
+                        <i class="bi bi-cash-coin"></i> 50 Taka/Session
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Consultants Grid -->
+        {% if consultants %}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            {% for consultant in consultants %}
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <!-- Consultant Avatar -->
+                    <div class="card-img-top bg-gradient text-white d-flex align-items-center justify-content-center" 
+                         style="height: 150px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <i class="bi bi-person-circle" style="font-size: 5rem;"></i>
+                    </div>
+                    
+                    <div class="card-body">
+                        <h5 class="card-title">{{ consultant.full_name or consultant.user_name }}</h5>
+                        
+                        <p class="card-text">
+                            <i class="bi bi-telephone text-primary"></i> 
+                            <strong>Phone:</strong> {{ consultant.phone_no or 'N/A' }}<br>
+                            
+                            <i class="bi bi-geo-alt text-primary"></i> 
+                            <strong>Address:</strong> {{ consultant.address or 'N/A' }}<br>
+                            
+                            <i class="bi bi-envelope text-primary"></i> 
+                            <strong>Email:</strong> {{ consultant.email or 'N/A' }}
+                        </p>
+
+                        <!-- Available consultation methods -->
+                        <div class="mb-3">
+                            <small class="text-muted">Available on:</small><br>
+                            <span class="badge bg-success me-1">
+                                <i class="bi bi-whatsapp"></i> WhatsApp
+                            </span>
+                            <span class="badge bg-primary me-1">
+                                <i class="bi bi-google"></i> Meet
+                            </span>
+                            <span class="badge bg-info">
+                                <i class="bi bi-camera-video"></i> Zoom
+                            </span>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('shaj.consultant_detail', consultant_id=consultant.user_id) }}" 
+                               class="btn btn-outline-primary">
+                                <i class="bi bi-info-circle"></i> View Profile
+                            </a>
+                            
+                            {% if session.user_id %}
+                            <a href="{{ url_for('shaj.book_appointment', consultant_id=consultant.user_id) }}" 
+                               class="btn btn-success">
+                                <i class="bi bi-calendar-check"></i> Book Consultation
+                            </a>
+                            {% else %}
+                            <a href="{{ url_for('auth.login') }}" 
+                               class="btn btn-primary">
+                                <i class="bi bi-box-arrow-in-right"></i> Login to Book
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <h5>No consultants available at the moment</h5>
+            <p class="mb-0">Please check back later or contact us for more information.</p>
+        </div>
+        {% endif %}
+
+        <!-- Why Consult Section -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <h3 class="mb-4 text-center">Why Choose Our Consultation Service?</h3>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center border-0 h-100">
+                    <div class="card-body">
+                        <i class="bi bi-patch-check text-success" style="font-size: 3rem;"></i>
+                        <h5 class="card-title mt-3">Expert Advice</h5>
+                        <p class="card-text">Get professional guidance from experienced pet care consultants.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center border-0 h-100">
+                    <div class="card-body">
+                        <i class="bi bi-laptop text-primary" style="font-size: 3rem;"></i>
+                        <h5 class="card-title mt-3">Online Convenience</h5>
+                        <p class="card-text">Join from anywhere via WhatsApp, Google Meet, or Zoom.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center border-0 h-100">
+                    <div class="card-body">
+                        <i class="bi bi-cash-coin text-warning" style="font-size: 3rem;"></i>
+                        <h5 class="card-title mt-3">Affordable</h5>
+                        <p class="card-text">Only 50 taka per session with refundable cancellation option.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center border-0 h-100">
+                    <div class="card-body">
+                        <i class="bi bi-heart text-danger" style="font-size: 3rem;"></i>
+                        <h5 class="card-title mt-3">Personalized Care</h5>
+                        <p class="card-text">Receive tailored recommendations for your unique situation.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- How It Works Section -->
+        <div class="card mt-5 border-primary">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-info-circle-fill"></i> How It Works
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center mb-3">
+                        <div class="mb-3">
+                            <i class="bi bi-1-circle-fill text-primary" style="font-size: 3rem;"></i>
+                        </div>
+                        <h6>Choose Consultant</h6>
+                        <p class="small text-muted">Select a consultant based on their expertise and availability</p>
+                    </div>
+                    <div class="col-md-3 text-center mb-3">
+                        <div class="mb-3">
+                            <i class="bi bi-2-circle-fill text-primary" style="font-size: 3rem;"></i>
+                        </div>
+                        <h6>Book Appointment</h6>
+                        <p class="small text-muted">Fill the form with your details and preferred time slot</p>
+                    </div>
+                    <div class="col-md-3 text-center mb-3">
+                        <div class="mb-3">
+                            <i class="bi bi-3-circle-fill text-primary" style="font-size: 3rem;"></i>
+                        </div>
+                        <h6>Make Payment</h6>
+                        <p class="small text-muted">Pay 50 taka via bKash, Nagad, or Card</p>
+                    </div>
+                    <div class="col-md-3 text-center mb-3">
+                        <div class="mb-3">
+                            <i class="bi bi-4-circle-fill text-primary" style="font-size: 3rem;"></i>
+                        </div>
+                        <h6>Join Session</h6>
+                        <p class="small text-muted">Receive meeting link and join at scheduled time</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ Section -->
+        <div class="card mt-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">
+                    <i class="bi bi-question-circle"></i> Frequently Asked Questions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#faq1">
+                                How long does a consultation last?
+                            </button>
+                        </h2>
+                        <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Each consultation session typically lasts 30-60 minutes, depending on your needs and the complexity of the discussion.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#faq2">
+                                Can I cancel my appointment?
+                            </button>
+                        </h2>
+                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Yes! You can cancel your appointment and receive a full refund if you cancel at least 24 hours before the scheduled time. Cancellations within 24 hours are non-refundable.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#faq3">
+                                What topics can I discuss?
+                            </button>
+                        </h2>
+                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                You can discuss pet adoption advice, animal care, behavioral issues, training tips, nutrition guidance, and any other pet-related concerns you may have.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#faq4">
+                                When will I receive the meeting link?
+                            </button>
+                        </h2>
+                        <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                After your payment is verified (usually within 2-4 hours), you'll receive a confirmation. The meeting link will be sent to you via email and SMS approximately 1 hour before your scheduled appointment.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

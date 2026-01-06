@@ -24,3 +24,4 @@ VALUES
 (1, 'Welcome to Havnhut! We are excited to help you find your perfect pet companion. Check out our available animals and feel free to reach out with any questions.', NULL, '2025-12-15', '10:00:00', 1),
 (2, 'New arrivals this week! We have several adorable cats and dogs looking for loving homes. Visit our shelter or browse online to meet them.', NULL, '2025-12-14', '14:30:00', 1),
 (3, 'Adoption Success Story: Max found his forever home! Thank you to everyone who supports our mission.', NULL, '2025-12-13', '09:15:00', 1);
+

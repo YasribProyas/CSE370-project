@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}Appointment Confirmed - Havnhut{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+        <!-- Success Header -->
+        <div class="text-center mb-4">
+            <div class="mb-3">
+                <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
+            </div>
+            <h1 class="display-5 text-success">Appointment Confirmed!</h1>
+            <p class="lead text-muted">Your consultation has been successfully booked</p>
+        </div>
+
+        <!-- Appointment Details Card -->
+        <div class="card shadow-lg mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-calendar-check"></i> Appointment Details
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <!-- Booking Reference -->
+                <div class="alert alert-info mb-4">
+                    <strong>Booking Reference:</strong> #{{ appointment.id }}
+                    <br>
+                    <small class="text-muted">Please save this reference number for future correspondence</small>
+                </div>
+
+                <!-- Personal Information -->
+                <h6 class="text-primary mb-3">
+                    <i class="bi bi-person-fill"></i> Your Information
+                </h6>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p class="mb-2"><strong>Name:</strong> {{ appointment.full_name }}</p>
+                        <p class="mb-2"><strong>Phone:</strong> {{ appointment.phone_no }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-2"><strong>Address:</strong> {{ appointment.address }}</p>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Consultant Information -->
+                <h6 class="text-primary mb-3">
+                    <i class="bi bi-person-badge"></i> Consultant Details
+                </h6>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p class="mb-2"><strong>Consultant:</strong> {{ appointment.consultant_name }}</p>
+                        <p class="mb-2"><strong>Phone:</strong> {{ appointment.consultant_phone }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-2"><strong>Email:</strong> {{ appointment.consultant_email }}</p>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Schedule Information -->
+                <h6 class="text-primary mb-3">
+                    <i class="bi bi-calendar-event"></i> Schedule
+                </h6>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <div class="card bg-light text-center">
+                            <div class="card-body">
+                                <i class="bi bi-calendar3 text-primary" style="font-size: 2rem;"></i>
+                                <h6 class="mt-2 mb-0">Date</h6>
+                                <p class="mb-0"><strong>{{ appointment.appointment_date }}</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light text-center">
+                            <div class="card-body">
+                                <i class="bi bi-clock text-primary" style="font-size: 2rem;"></i>
+                                <h6 class="mt-2 mb-0">Time</h6>
+                                <p class="mb-0"><strong>{{ appointment.time_slot }}</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light text-center">
+                            <div class="card-body">
+                                <i class="bi bi-laptop text-primary" style="font-size: 2rem;"></i>
+                                <h6 class="mt-2 mb-0">Method</h6>
+                                <p class="mb-0"><strong>{{ appointment.consultation_method }}</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Consultation Details -->
+                <h6 class="text-primary mb-3">
+                    <i class="bi bi-chat-text"></i> Consultation Purpose
+                </h6>
+                <div class="alert alert-light mb-3">
+                    {{ appointment.reason }}
+                </div>
+
+                <hr>
+
+                <!-- Payment Information -->
+                <h6 class="text-primary mb-3">
+                    <i class="bi bi-credit-card"></i> Payment Details
+                </h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-2"><strong>Amount Paid:</strong> <span class="badge bg-success">50 Taka</span></p>
+                        <p class="mb-2"><strong>Payment Method:</strong> {{ appointment.payment_method }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-2"><strong>Transaction ID:</strong> {{ appointment.trx_id or 'N/A' }}</p>
+                        <p class="mb-2"><strong>Status:</strong> 
+                            <span class="badge bg-warning text-dark">{{ appointment.status.title() }}</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- What Happens Next Card -->
+        <div class="card mb-4 border-primary">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-lightbulb-fill"></i> What Happens Next?
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    <div class="mb-3">
+                        <h6 class="text-success">
+                            <i class="bi bi-check-circle-fill"></i> Step 1: Payment Verification
+                        </h6>
+                        <p class="mb-0 ms-4">Our team will verify your payment within 2-4 hours.</p>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="text-primary">
+                            <i class="bi bi-2-circle"></i> Step 2: Confirmation
+                        </h6>
+                        <p class="mb-0 ms-4">You will receive a confirmation email/SMS within 24 hours.</p>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="text-primary">
+                            <i class="bi bi-3-circle"></i> Step 3: Meeting Link
+                        </h6>
+                        <p class="mb-0 ms-4">The {{ appointment.consultation_method }} meeting link/number will be shared 1 hour before the appointment.</p>
+                    </div>
+                    <div class="mb-0">
+                        <h6 class="text-primary">
+                            <i class="bi bi-4-circle"></i> Step 4: Join Consultation
+                        </h6>
+                        <p class="mb-0 ms-4">Join the consultation at the scheduled time using the provided link/number.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Important Notes -->
+        <div class="alert alert-warning mb-4">
+            <h6 class="alert-heading">
+                <i class="bi bi-exclamation-triangle-fill"></i> Important Notes
+            </h6>
+            <ul class="mb-0">
+                <li>You will receive the meeting link/number via email and SMS 1 hour before the appointment</li>
+                <li>Please join the consultation on time. The consultant will wait for 10 minutes maximum</li>
+                <li>Make sure you have a stable internet connection</li>
+                <li>Install {{ appointment.consultation_method }} app before the scheduled time</li>
+                <li>You can cancel and get a refund if cancelled at least 24 hours before the appointment</li>
+            </ul>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-grid gap-2">
+            <a href="{{ url_for('shaj.my_consultations') }}" class="btn btn-primary btn-lg">
+                <i class="bi bi-list-ul"></i> View All My Appointments
+            </a>
+            <a href="{{ url_for('shaj.consultants') }}" class="btn btn-outline-primary">
+                <i class="bi bi-calendar-plus"></i> Book Another Consultation
+            </a>
+            <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-house"></i> Back to Home
+            </a>
+        </div>
+
+        <!-- Contact Information -->
+        <div class="card mt-4 bg-light">
+            <div class="card-body text-center">
+                <h6 class="text-primary">
+                    <i class="bi bi-question-circle-fill"></i> Need Help?
+                </h6>
+                <p class="mb-2">If you have any questions or concerns, please contact us:</p>
+                <p class="mb-0">
+                    <i class="bi bi-envelope"></i> support@havnhut.com | 
+                    <i class="bi bi-telephone"></i> 01712-345678
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

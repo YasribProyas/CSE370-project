@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}My Appointments - Havnhut{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>My Appointments</h1>
+            <a href="{{ url_for('shaj.consultants') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Book New Appointment
+            </a>
+        </div>
+
+        {% if appointments %}
+        <div class="row g-4">
+            {% for appointment in appointments %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm">
+                    <!-- Card Header with Time Slot -->
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clock"></i> {{ appointment.time_slot }}
+                        </h5>
+                    </div>
+                    
+                    <div class="card-body">
+                        <!-- Consultant Info -->
+                        <div class="mb-3">
+                            <h6 class="text-primary mb-2">
+                                <i class="bi bi-person-circle"></i> Consultant
+                            </h6>
+                            <p class="mb-1"><strong>{{ appointment.consultant_name or 'N/A' }}</strong></p>
+                        </div>
+
+                        <!-- Contact Details -->
+                        <div class="mb-3">
+                            <h6 class="text-primary mb-2">
+                                <i class="bi bi-telephone"></i> Contact
+                            </h6>
+                            <p class="mb-1 small">
+                                <strong>Phone:</strong> {{ appointment.consultant_phone or 'N/A' }}
+                            </p>
+                            <p class="mb-1 small">
+                                <strong>Email:</strong> {{ appointment.consultant_email or 'N/A' }}
+                            </p>
+                        </div>
+
+                        <!-- Location -->
+                        <div class="mb-3">
+                            <h6 class="text-primary mb-2">
+                                <i class="bi bi-geo-alt"></i> Location
+                            </h6>
+                            <p class="mb-0 small">{{ appointment.consultant_address or 'N/A' }}</p>
+                        </div>
+
+                        <!-- Status Badge -->
+                        <div class="mb-3">
+                            <span class="badge bg-success">
+                                <i class="bi bi-check-circle"></i> Confirmed
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Card Footer with Actions -->
+                    <div class="card-footer bg-light">
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('shaj.consultant_detail', consultant_id=appointment.consultant_id) }}" 
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-info-circle"></i> View Consultant
+                            </a>
+                            
+                            <!-- Cancel Button with Confirmation -->
+                            <form method="POST" 
+                                  action="{{ url_for('shaj.cancel_appointment', consultant_id=appointment.consultant_id, timeslot_id=appointment.timeslot_id) }}"
+                                  onsubmit="return confirm('Are you sure you want to cancel this appointment?');">
+                                <button type="submit" class="btn btn-sm btn-danger w-100">
+                                    <i class="bi bi-x-circle"></i> Cancel Appointment
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Helpful Tips -->
+        <div class="card mt-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">
+                    <i class="bi bi-lightbulb"></i> Appointment Tips
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6 class="text-primary">Before Your Appointment</h6>
+                        <ul class="small">
+                            <li>Arrive 5 minutes early</li>
+                            <li>Bring any relevant documents</li>
+                            <li>Prepare questions you want to ask</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-primary">During Consultation</h6>
+                        <ul class="small">
+                            <li>Be honest about your lifestyle</li>
+                            <li>Ask about pet care requirements</li>
+                            <li>Discuss any concerns openly</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-primary">After Meeting</h6>
+                        <ul class="small">
+                            <li>Follow up on recommendations</li>
+                            <li>Contact us with any questions</li>
+                            <li>Schedule follow-up if needed</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% else %}
+        <!-- No Appointments -->
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-calendar-x text-muted" style="font-size: 5rem;"></i>
+                <h3 class="mt-4">No Appointments Yet</h3>
+                <p class="text-muted mb-4">You haven't booked any consultations. Schedule one now to get expert advice!</p>
+                <a href="{{ url_for('shaj.consultants') }}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-calendar-check"></i> Book Your First Appointment
+                </a>
+            </div>
+        </div>
+
+        <!-- Benefits of Consultation -->
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card text-center border-0">
+                    <div class="card-body">
+                        <i class="bi bi-heart text-danger" style="font-size: 3rem;"></i>
+                        <h5 class="card-title mt-3">Find Your Match</h5>
+                        <p class="card-text small">Get help finding the perfect pet for your lifestyle.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center border-0">
+                    <div class="card-body">
+                        <i class="bi bi-chat-dots text-primary" style="font-size: 3rem;"></i>
+                        <h5 class="card-title mt-3">Expert Guidance</h5>
+                        <p class="card-text small">Receive professional advice on pet care and training.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center border-0">
+                    <div class="card-body">
+                        <i class="bi bi-shield-check text-success" style="font-size: 3rem;"></i>
+                        <h5 class="card-title mt-3">Ongoing Support</h5>
+                        <p class="card-text small">Get continuous support throughout your adoption journey.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
