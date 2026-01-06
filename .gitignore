@@ -4,3 +4,5 @@ venv/
 .env
 .proyas
 **/__pycache__/
+
+app/static/uploads/

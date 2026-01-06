@@ -91,7 +91,7 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
                             {% if session.is_admin %}
-                            <li><a class="dropdown-item" href="#">Admin Panel</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('proyas.admin_dashboard') }}">Admin Panel</a></li>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>

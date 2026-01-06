@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Add Consultant - Havnhut Admin{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h1 class="mb-4">💼 Add New Consultant</h1>
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('proyas.add_consultant') }}">
+                        <div class="mb-3">
+                            <label for="user_id" class="form-label">Select User <span class="text-danger">*</span></label>
+                            <select class="form-control" id="user_id" name="user_id" required>
+                                <option value="">-- Choose a user --</option>
+                                {% for user in users %}
+                                <option value="{{ user.id }}">{{ user.name }} ({{ user.email }})</option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">Only non-admin, non-consultant users are shown</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="full_name" class="form-label">Full Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="full_name" name="full_name" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="phone_no" class="form-label">Phone Number <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="phone_no" name="phone_no" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="address" class="form-label">Address <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="address" name="address" rows="3" required></textarea>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-check-circle"></i> Add Consultant
+                            </button>
+                            <a href="{{ url_for('proyas.manage_users') }}" class="btn btn-secondary btn-lg">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

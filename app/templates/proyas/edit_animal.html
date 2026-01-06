@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Animal - Havnhut Admin{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h1 class="mb-4">🐾 Edit Animal: {{ animal.title }}</h1>
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('proyas.edit_animal', animal_id=animal.id) }}">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="title" class="form-label">Animal Title <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="title" name="title" value="{{ animal.title }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="type" class="form-label">Type <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="type" name="type" value="{{ animal.type }}" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="breed" class="form-label">Breed <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="breed" name="breed" value="{{ animal.breed }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="color" class="form-label">Color <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="color" name="color" value="{{ animal.color }}" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="age" class="form-label">Age (Years) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="age" name="age" value="{{ animal.age }}" min="0" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="sex" class="form-label">Sex</label>
+                                <select class="form-control" id="sex" name="sex">
+                                    <option value="">Select...</option>
+                                    <option value="Male" {% if animal.sex == 'Male' %}selected{% endif %}>Male</option>
+                                    <option value="Female" {% if animal.sex == 'Female' %}selected{% endif %}>Female</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="size" class="form-label">Size</label>
+                                <select class="form-control" id="size" name="size">
+                                    <option value="">Select...</option>
+                                    <option value="Small" {% if animal.size == 'Small' %}selected{% endif %}>Small</option>
+                                    <option value="Medium" {% if animal.size == 'Medium' %}selected{% endif %}>Medium</option>
+                                    <option value="Large" {% if animal.size == 'Large' %}selected{% endif %}>Large</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="weight" class="form-label">Weight (kg)</label>
+                                <input type="number" class="form-control" id="weight" name="weight" value="{{ animal.weight }}" step="0.1">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="training" class="form-label">Training</label>
+                                <input type="text" class="form-control" id="training" name="training" value="{{ animal.training or '' }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="img_url" class="form-label">Image URL</label>
+                                <input type="text" class="form-control" id="img_url" name="img_url" value="{{ animal.img_url or '' }}">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3">{{ animal.description or '' }}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="diet" class="form-label">Diet</label>
+                            <textarea class="form-control" id="diet" name="diet" rows="2">{{ animal.diet or '' }}</textarea>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="behaviour" class="form-label">Behaviour</label>
+                            <textarea class="form-control" id="behaviour" name="behaviour" rows="2">{{ animal.behaviour or '' }}</textarea>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-warning btn-lg">
+                                <i class="bi bi-pencil"></i> Update Animal
+                            </button>
+                            <a href="{{ url_for('proyas.manage_animals') }}" class="btn btn-secondary btn-lg">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

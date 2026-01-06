@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Add Animal - Havnhut Admin{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h1 class="mb-4">🐾 Add New Animal</h1>
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('proyas.add_animal') }}">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="title" class="form-label">Animal Title <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="title" name="title" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="type" class="form-label">Type <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="type" name="type" placeholder="e.g., Dog, Cat" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="breed" class="form-label">Breed <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="breed" name="breed" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="color" class="form-label">Color <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="color" name="color" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="age" class="form-label">Age (Years) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="age" name="age" min="0" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="sex" class="form-label">Sex</label>
+                                <select class="form-control" id="sex" name="sex">
+                                    <option value="">Select...</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="size" class="form-label">Size</label>
+                                <select class="form-control" id="size" name="size">
+                                    <option value="">Select...</option>
+                                    <option value="Small">Small</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="Large">Large</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="weight" class="form-label">Weight (kg)</label>
+                                <input type="number" class="form-control" id="weight" name="weight" step="0.1">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="training" class="form-label">Training</label>
+                                <input type="text" class="form-control" id="training" name="training" placeholder="e.g., House trained">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="img_url" class="form-label">Image URL</label>
+                                <input type="text" class="form-control" id="img_url" name="img_url" placeholder="https://...">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" placeholder="Detailed description of the animal..."></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="diet" class="form-label">Diet</label>
+                            <textarea class="form-control" id="diet" name="diet" rows="2" placeholder="Dietary requirements..."></textarea>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="behaviour" class="form-label">Behaviour</label>
+                            <textarea class="form-control" id="behaviour" name="behaviour" rows="2" placeholder="Behaviour description..."></textarea>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-check-circle"></i> Add Animal
+                            </button>
+                            <a href="{{ url_for('proyas.manage_animals') }}" class="btn btn-secondary btn-lg">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
