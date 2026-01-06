@@ -81,7 +81,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">
+                        <a class="nav-link" href="{{ url_for('fahim.blogs') }}">
                             <i class="bi bi-journal-text"></i> Blogs
                         </a>
                     </li>
@@ -112,7 +112,7 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
                             {% if session.is_admin %}
-                            <li><a class="dropdown-item" href="#">
+                            <li><a class="dropdown-item" href="{{ url_for('proyas.admin_dashboard') }}">
                                 <i class="bi bi-speedometer2"></i> Admin Panel
                             </a></li>
                             <li>
@@ -122,12 +122,14 @@
                             <li><a class="dropdown-item" href="#">
                                 <i class="bi bi-person"></i> Profile
                             </a></li>
+                            {% if not session.is_admin %}
                             <li><a class="dropdown-item" href="{{ url_for('shaj.my_adoptions') }}">
                                 <i class="bi bi-heart"></i> My Adoptions
                             </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('shaj.my_consultations') }}">
                                 <i class="bi bi-calendar-event"></i> My Appointments
                             </a></li>
+                            {% endif %}
                             <li>
                                 <hr class="dropdown-divider">
                             </li>

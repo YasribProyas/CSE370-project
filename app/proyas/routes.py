@@ -24,13 +24,11 @@ def index():
 @proyas_bp.route('/admin')
 @admin_required
 def admin_dashboard():
-    # Get counts
     animals_count = execute_query("SELECT COUNT(*) as count FROM Animal", fetch=True)
     users_count = execute_query("SELECT COUNT(*) as count FROM User", fetch=True)
     admins_count = execute_query("SELECT COUNT(*) as count FROM Admin", fetch=True)
     consultants_count = execute_query("SELECT COUNT(*) as count FROM Consultant", fetch=True)
     
-    # Get first 10 of each
     animals = execute_query("SELECT * FROM Animal LIMIT 10", fetch=True)
     admins = execute_query("""SELECT u.id, u.name, u.email FROM User u 
                              INNER JOIN Admin a ON u.id = a.user_id LIMIT 10""", fetch=True)
@@ -80,7 +78,6 @@ def add_animal():
             flash('Please fill all required fields', 'danger')
             return render_template('proyas/add_animal.html')
         
-        # Get next animal id
         id_query = "SELECT COALESCE(MAX(id), 0) + 1 as next_id FROM Animal"
         result = execute_query(id_query, fetch=True)
         next_id = result[0]['next_id'] if result else 1
