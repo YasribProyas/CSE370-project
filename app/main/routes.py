@@ -16,7 +16,7 @@ def index():
     """, fetch=True) or []
     
 
-    categories = ['Cat', 'Dog', 'Bird', 'Fish', 'Other']
+    categories = ['Cat', 'Dog', 'Bird', 'Other']
     category_counts = {}
     for category in categories:
         count_query = "SELECT COUNT(*) as count FROM Animal WHERE type = %s"

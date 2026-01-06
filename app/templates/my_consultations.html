@@ -3,282 +3,148 @@
 {% block title %}My Consultations - Havnhut{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>My Consultations</h1>
-            <a href="{{ url_for('shaj.consultants') }}" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Book New Consultation
-            </a>
-        </div>
+<div class="container">
+    <div class="text-center mb-4">
+        <h1 class="display-5">{% if is_consultant %}My Consultations & Adoptions{% else %}My Consultations{% endif %}</h1>
+        <p class="lead text-muted">{% if is_consultant %}View and manage your scheduled consultations and adoption appointments{% else %}View and manage your scheduled consultations{% endif %}</p>
+    </div>
 
-        {% if appointments %}
+    {% if consultations or adoptions %}
+    <!-- CONSULTATIONS SECTION -->
+    {% if consultations %}
+    <div class="mb-5">
+        <h4 class="mb-3"><i class="bi bi-calendar-check"></i> Consultation Bookings</h4>
         <div class="row g-4">
-            {% for appointment in appointments %}
+            {% for consultation in consultations %}
             <div class="col-md-6 col-lg-4">
                 <div class="card h-100 shadow-sm">
-                    <!-- Card Header with Status -->
-                    <div class="card-header 
-                        {% if appointment.status == 'confirmed' %}bg-success
-                        {% elif appointment.status == 'cancelled' %}bg-danger
-                        {% elif appointment.status == 'completed' %}bg-info
-                        {% else %}bg-warning{% endif %} text-white">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">
-                                <i class="bi bi-calendar-event"></i> 
-                                Booking #{{ appointment.id }}
-                            </h5>
-                            {% if appointment.status == 'confirmed' %}
-                            <i class="bi bi-check-circle-fill" title="Confirmed"></i>
-                            {% elif appointment.status == 'cancelled' %}
-                            <i class="bi bi-x-circle-fill" title="Cancelled"></i>
-                            {% elif appointment.status == 'completed' %}
-                            <i class="bi bi-check2-all" title="Completed"></i>
-                            {% else %}
-                            <i class="bi bi-clock-fill" title="Pending"></i>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
                     <div class="card-body">
-                        <!-- Schedule Info -->
-                        <div class="mb-3">
-                            <h6 class="text-primary mb-2">
-                                <i class="bi bi-clock"></i> Schedule
-                            </h6>
-                            <p class="mb-1">
-                                <strong>Date:</strong> {{ appointment.appointment_date }}
-                            </p>
-                            <p class="mb-0">
-                                <strong>Time:</strong> {{ appointment.time_slot }}
-                            </p>
-                        </div>
-
-                        <!-- Consultant Info -->
-                        <div class="mb-3">
-                            <h6 class="text-primary mb-2">
-                                <i class="bi bi-person-circle"></i> Consultant
-                            </h6>
-                            <p class="mb-1"><strong>{{ appointment.consultant_name or 'N/A' }}</strong></p>
-                            <p class="mb-1 small">
-                                <i class="bi bi-telephone"></i> {{ appointment.consultant_phone or 'N/A' }}
-                            </p>
-                            <p class="mb-0 small">
-                                <i class="bi bi-envelope"></i> {{ appointment.consultant_email or 'N/A' }}
-                            </p>
-                        </div>
-
-                        <!-- Consultation Method -->
-                        <div class="mb-3">
-                            <h6 class="text-primary mb-2">
-                                <i class="bi bi-laptop"></i> Method
-                            </h6>
-                            <span class="badge bg-info">{{ appointment.consultation_method }}</span>
-                        </div>
-
-                        <!-- Reason -->
-                        <div class="mb-3">
-                            <h6 class="text-primary mb-2">
-                                <i class="bi bi-chat-text"></i> Reason
-                            </h6>
-                            <p class="mb-0 small text-muted">
-                                {{ appointment.reason[:100] }}{% if appointment.reason|length > 100 %}...{% endif %}
-                            </p>
-                        </div>
-
-                        <!-- Payment Info -->
-                        <div class="mb-3">
-                            <h6 class="text-primary mb-2">
-                                <i class="bi bi-credit-card"></i> Payment
-                            </h6>
-                            <p class="mb-1">
-                                <strong>Amount:</strong> <span class="badge bg-success">50 Taka</span>
-                            </p>
-                            <p class="mb-0 small">
-                                <strong>Method:</strong> {{ appointment.payment_method }}
-                            </p>
-                        </div>
-
+                        <h5 class="card-title">
+                            <i class="bi bi-person-check text-primary"></i> 
+                            {% if is_consultant %}
+                            {{ consultation.adopter_name }}
+                            {% else %}
+                            {{ consultation.consultant_name }}
+                            {% endif %}
+                        </h5>
+                        <p class="text-muted mb-2">
+                            <i class="bi bi-calendar-event"></i> {{ consultation.date }}
+                        </p>
+                        <p class="text-muted mb-3">
+                            <i class="bi bi-clock"></i> {{ consultation.slot_time }}
+                        </p>
+                        
                         <!-- Status Badge -->
                         <div class="mb-3">
-                            <span class="badge 
-                                {% if appointment.status == 'confirmed' %}bg-success
-                                {% elif appointment.status == 'cancelled' %}bg-danger
-                                {% elif appointment.status == 'completed' %}bg-info
-                                {% else %}bg-warning text-dark{% endif %} w-100 py-2">
-                                {% if appointment.status == 'confirmed' %}
-                                <i class="bi bi-check-circle"></i> Confirmed
-                                {% elif appointment.status == 'cancelled' %}
-                                <i class="bi bi-x-circle"></i> Cancelled
-                                {% elif appointment.status == 'completed' %}
-                                <i class="bi bi-check2-all"></i> Completed
-                                {% else %}
-                                <i class="bi bi-hourglass-split"></i> Pending Verification
-                                {% endif %}
-                            </span>
+                            {% if consultation.link and consultation.link != '0' %}
+                            <span class="badge bg-success">Confirmed</span>
+                            {% else %}
+                            <span class="badge bg-warning">Awaiting Confirmation</span>
+                            {% endif %}
                         </div>
 
-                        <!-- Meeting Link (if confirmed) -->
-                        {% if appointment.status == 'confirmed' and appointment.meeting_link %}
-                        <div class="alert alert-success mb-3">
+                        {% if consultation.link and consultation.link != '0' %}
+                        <div class="alert alert-success mb-3" style="font-size: 0.875rem;">
                             <strong>Meeting Link:</strong><br>
-                            <a href="{{ appointment.meeting_link }}" target="_blank" class="alert-link">
-                                {{ appointment.meeting_link }}
+                            <a href="{{ consultation.link }}" target="_blank" class="btn btn-sm btn-outline-success mt-2">
+                                <i class="bi bi-box-arrow-up-right"></i> Join Meeting
                             </a>
                         </div>
-                        {% endif %}
+                        {% else %}
+                        <p class="card-text small text-secondary mb-3">
+                            Your consultation request has been submitted. You will receive a meeting link once the admin confirms and sets up the session.
+                        </p>
 
-                        <!-- Cancellation Info -->
-                        {% if appointment.status == 'cancelled' and appointment.cancelled_at %}
-                        <div class="alert alert-danger mb-0">
-                            <small>
-                                <i class="bi bi-info-circle"></i> Cancelled on: {{ appointment.cancelled_at.strftime('%Y-%m-%d %H:%M') }}
-                                <br>Refund will be processed within 3-5 business days.
-                            </small>
+                        <div class="alert alert-info mb-3" style="font-size: 0.875rem;">
+                            <strong>Fee:</strong> 500 ৳ <strong>Status:</strong> Pending
                         </div>
                         {% endif %}
                     </div>
+                    <div class="card-footer bg-white border-top">
+                        {% if not is_consultant and (not consultation.link or consultation.link == '0') %}
+                        <form method="POST" action="{{ url_for('proyas.cancel_consultation', consultant_id=consultation.consultant_id, consultation_date=consultation.date, slot_id=consultation.timeslot_id) }}" onsubmit="return confirm('Are you sure you want to cancel this consultation?');">
+                            <button type="submit" class="btn btn-danger btn-sm w-100">
+                                <i class="bi bi-trash"></i> Cancel
+                            </button>
+                        </form>
+                        {% else %}
+                        <button class="btn btn-secondary btn-sm w-100" disabled>
+                            <i class="bi bi-lock"></i> {% if consultation.link and consultation.link != '0' %}Confirmed{% else %}Awaiting{% endif %}
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
 
-                    <!-- Card Footer with Actions -->
-                    <div class="card-footer bg-light">
+    <!-- ADOPTIONS SECTION (for consultants) -->
+    {% if is_consultant and adoptions %}
+    <div class="mb-5">
+        <h4 class="mb-3"><i class="bi bi-heart"></i> Adoption Appointments</h4>
+        <div class="row g-4">
+            {% for adoption in adoptions %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm border-info">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-heart text-danger"></i> {{ adoption.animal_name }}
+                        </h5>
+                        <p class="text-muted mb-2">
+                            <strong>Adopter:</strong> {{ adoption.adopter_name }}
+                        </p>
+                        <p class="text-muted mb-2">
+                            <i class="bi bi-calendar-event"></i> {{ adoption.date }}
+                        </p>
+                        <p class="text-muted mb-3">
+                            <i class="bi bi-clock"></i> {{ adoption.slot_time }}
+                        </p>
+                        
+                        <!-- Status Badge -->
+                        <div class="mb-3">
+                            <span class="badge bg-info">Pending Your Decision</span>
+                        </div>
+
+                        {% if adoption.link and adoption.link != '0' %}
+                        <div class="alert alert-success mb-3" style="font-size: 0.875rem;">
+                            <strong>Meeting Link:</strong><br>
+                            <a href="{{ adoption.link }}" target="_blank" class="btn btn-sm btn-outline-success mt-2">
+                                <i class="bi bi-box-arrow-up-right"></i> Join Meeting
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer bg-white border-top">
                         <div class="d-grid gap-2">
-                            {% if appointment.status == 'pending' or appointment.status == 'confirmed' %}
-                            <!-- Cancel Button -->
-                            <form method="POST" 
-                                  action="{{ url_for('shaj.cancel_consultation', appointment_id=appointment.id) }}"
-                                  onsubmit="return confirm('Are you sure you want to cancel this consultation? You will receive a refund if cancelled at least 24 hours before the appointment.');">
-                                <button type="submit" class="btn btn-sm btn-danger w-100">
-                                    <i class="bi bi-x-circle"></i> Cancel Consultation
+                            <form method="POST" action="{{ url_for('proyas.approve_adoption', adopter_id=adoption.adopter_id, consultant_id=adoption.consultant_id, adoption_date=adoption.date, slot_id=adoption.timeslot_id) }}" style="margin-bottom: 5px;">
+                                <button type="submit" class="btn btn-success btn-sm w-100">
+                                    <i class="bi bi-check-circle"></i> Approve
                                 </button>
                             </form>
-                            {% elif appointment.status == 'cancelled' %}
-                            <button class="btn btn-sm btn-secondary" disabled>
-                                <i class="bi bi-x-circle"></i> Cancelled
-                            </button>
-                            {% elif appointment.status == 'completed' %}
-                            <button class="btn btn-sm btn-success" disabled>
-                                <i class="bi bi-check-circle"></i> Completed
-                            </button>
-                            {% endif %}
-                            
-                            <a href="{{ url_for('shaj.appointment_confirmation', appointment_id=appointment.id) }}" 
-                               class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-eye"></i> View Details
-                            </a>
+                            <form method="POST" action="{{ url_for('proyas.reject_adoption', adopter_id=adoption.adopter_id, consultant_id=adoption.consultant_id, adoption_date=adoption.date, slot_id=adoption.timeslot_id) }}">
+                                <button type="submit" class="btn btn-danger btn-sm w-100" onclick="return confirm('Are you sure you want to reject this adoption request?');">
+                                    <i class="bi bi-x-circle"></i> Reject
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
             </div>
             {% endfor %}
         </div>
-
-        <!-- Summary Stats -->
-        <div class="row mt-4">
-            <div class="col-md-3">
-                <div class="card text-center border-primary">
-                    <div class="card-body">
-                        <h2 class="text-primary">{{ appointments|length }}</h2>
-                        <p class="mb-0">Total Appointments</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card text-center border-warning">
-                    <div class="card-body">
-                        <h2 class="text-warning">{{ appointments|selectattr('status', 'equalto', 'pending')|list|length }}</h2>
-                        <p class="mb-0">Pending</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card text-center border-success">
-                    <div class="card-body">
-                        <h2 class="text-success">{{ appointments|selectattr('status', 'equalto', 'confirmed')|list|length }}</h2>
-                        <p class="mb-0">Confirmed</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card text-center border-info">
-                    <div class="card-body">
-                        <h2 class="text-info">{{ appointments|selectattr('status', 'equalto', 'completed')|list|length }}</h2>
-                        <p class="mb-0">Completed</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {% else %}
-        <!-- No Appointments -->
-        <div class="card">
-            <div class="card-body text-center py-5">
-                <i class="bi bi-calendar-x text-muted" style="font-size: 5rem;"></i>
-                <h3 class="mt-4">No Consultations Yet</h3>
-                <p class="text-muted mb-4">You haven't booked any consultations. Schedule one now to get expert advice!</p>
-                <a href="{{ url_for('shaj.consultants') }}" class="btn btn-primary btn-lg">
-                    <i class="bi bi-calendar-check"></i> Book Your First Consultation
-                </a>
-            </div>
-        </div>
-
-        <!-- Benefits of Consultation -->
-        <div class="row mt-4">
-            <div class="col-md-4">
-                <div class="card text-center border-0">
-                    <div class="card-body">
-                        <i class="bi bi-heart text-danger" style="font-size: 3rem;"></i>
-                        <h5 class="card-title mt-3">Expert Guidance</h5>
-                        <p class="card-text small">Get professional advice from experienced consultants.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card text-center border-0">
-                    <div class="card-body">
-                        <i class="bi bi-laptop text-primary" style="font-size: 3rem;"></i>
-                        <h5 class="card-title mt-3">Convenient Online</h5>
-                        <p class="card-text small">Join from anywhere via WhatsApp, Google Meet, or Zoom.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card text-center border-0">
-                    <div class="card-body">
-                        <i class="bi bi-shield-check text-success" style="font-size: 3rem;"></i>
-                        <h5 class="card-title mt-3">Affordable</h5>
-                        <p class="card-text small">Only 50 taka per consultation with refund option.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- Help Section -->
-        <div class="card mt-4 bg-light">
-            <div class="card-body">
-                <h5 class="card-title">
-                    <i class="bi bi-question-circle"></i> Consultation Policy
-                </h5>
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6 class="text-primary">Cancellation & Refund</h6>
-                        <ul class="small">
-                            <li>Full refund if cancelled 24+ hours before appointment</li>
-                            <li>No refund if cancelled within 24 hours</li>
-                            <li>Refund processed within 3-5 business days</li>
-                        </ul>
-                    </div>
-                    <div class="col-md-6">
-                        <h6 class="text-primary">Need Help?</h6>
-                        <ul class="small mb-0">
-                            <li>Email: support@havnhut.com</li>
-                            <li>Phone: 01712-345678</li>
-                            <li>Available: 9 AM - 6 PM (Daily)</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
+    {% endif %}
+
+    {% else %}
+    <div class="alert alert-info text-center">
+        <h5>No Consultations or Appointments</h5>
+        <p class="mb-2">You haven't booked any consultations yet.</p>
+        <a href="{{ url_for('proyas.consultants') }}" class="btn btn-primary">
+            <i class="bi bi-calendar-check"></i> Browse Consultants
+        </a>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

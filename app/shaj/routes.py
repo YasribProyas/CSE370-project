@@ -1,7 +1,8 @@
-from flask import render_template, request, redirect, url_for, session, flash
+from flask import render_template, request, redirect, url_for, session, flash, jsonify
 from app.shaj import shaj_bp
 from app.db import execute_query
-from datetime import datetime
+from datetime import datetime, timedelta
+from functools import wraps
 
 
 # ============== DONATION ROUTES ==============
@@ -204,193 +205,136 @@ def cancel_adoption(animal_id):
     return redirect(url_for('shaj.my_adoptions'))
 
 
+# ============== ADOPTION APPOINTMENT ROUTES ==============
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('user_id') or not session.get('is_admin'):
+            flash('You need admin access to view this page', 'danger')
+            return redirect(url_for('main.index'))
+        return f(*args, **kwargs)
+    return decorated_function
 
-# ============== CONSULTATION ROUTES ==============
 
-@shaj_bp.route('/consultants')
-def consultants():
-    """Display all available consultants"""
+@shaj_bp.route('/admin/adoptions')
+@admin_required
+def admin_adoptions():
+    """Admin view of all pending adoption requests"""
     query = """
-        SELECT c.*, u.name as user_name, u.email 
-        FROM Consultant c 
-        LEFT JOIN User u ON c.user_id = u.id
-        ORDER BY c.user_id
+        SELECT a.*, an.title, an.breed, an.type, u.name as adopter_name, ad.full_name, ad.phone_no
+        FROM Adopt a
+        INNER JOIN Animal an ON a.animal_id = an.id
+        INNER JOIN Adopter ad ON a.adopter_id = ad.user_id
+        INNER JOIN User u ON a.adopter_id = u.id
+        WHERE a.approved = FALSE
+        ORDER BY a.adoption_date DESC
     """
-    consultants = execute_query(query, fetch=True) or []
-    
-    return render_template('consultants.html', consultants=consultants)
+    pending_adoptions = execute_query(query, fetch=True) or []
+    return render_template('/admin_adoptions.html', adoptions=pending_adoptions)
 
-@shaj_bp.route('/consultant/<int:consultant_id>')
-def consultant_detail(consultant_id):
-    """Display consultant details"""
-    query = """
-        SELECT c.*, u.name as user_name, u.email 
-        FROM Consultant c 
-        LEFT JOIN User u ON c.user_id = u.id
-        WHERE c.user_id = %s
-    """
-    consultants = execute_query(query, (consultant_id,), fetch=True)
-    
-    if not consultants:
-        flash('Consultant not found', 'danger')
-        return redirect(url_for('shaj.consultants'))
-    # Determine if current user is a registered adopter (used by template to show Book button)
-    is_adopter = False
-    if 'user_id' in session:
-        check_adopter = "SELECT * FROM Adopter WHERE user_id = %s"
-        adopter = execute_query(check_adopter, (session['user_id'],), fetch=True)
-        is_adopter = bool(adopter)
 
-    return render_template('consultant_detail.html', consultant=consultants[0], is_adopter=is_adopter)
-
-@shaj_bp.route('/consultation/book/<int:consultant_id>', methods=['GET', 'POST'])
-def book_appointment(consultant_id):
-    """Book an appointment with a consultant"""
-    if 'user_id' not in session:
-        flash('Please login first', 'warning')
-        return redirect(url_for('auth.login'))
-    
-    # Get consultant info
-    consultant_query = """
-        SELECT c.*, u.name as user_name, u.email
-        FROM Consultant c 
-        LEFT JOIN User u ON c.user_id = u.id
-        WHERE c.user_id = %s
-    """
-    consultants = execute_query(consultant_query, (consultant_id,), fetch=True)
-    
-    if not consultants:
-        flash('Consultant not found', 'danger')
-        return redirect(url_for('shaj.consultants'))
-    
+@shaj_bp.route('/admin/adoptions/set-appointment/<int:animal_id>/<int:adopter_id>', methods=['GET', 'POST'])
+@admin_required
+def set_adoption_appointment(animal_id, adopter_id):
+    """Admin sets appointment for adoption (choose consultant, date, slot, and link all at once)"""
     if request.method == 'POST':
-        # Get form data
-        full_name = request.form.get('full_name')
-        address = request.form.get('address')
-        phone_no = request.form.get('phone_no')
-        appointment_date = request.form.get('appointment_date')
-        time_slot = request.form.get('time_slot')
-        reason = request.form.get('reason')
-        method = request.form.get('method')  # WhatsApp/Google Meet/Zoom
-        payment_method = request.form.get('payment_method')
-        trx_id = request.form.get('trx_id')
+        consultant_id = request.form.get('consultant_id')
+        selected_date = request.form.get('adoption_date')
+        selected_slot = request.form.get('timeslot_id')
+        link = request.form.get('link', '0')
         
-        # Validate required fields
-        if not all([full_name, address, phone_no, appointment_date, time_slot, reason, method, payment_method]):
-            flash('All fields are required', 'danger')
-            return render_template('book_consultation.html', consultant=consultants[0])
+        if not all([consultant_id, selected_date, selected_slot]):
+            flash('Please select consultant, date, and time slot', 'danger')
+            return redirect(url_for('shaj.admin_adoptions'))
         
-        # Validate transaction ID for non-cash payments
-        if payment_method != 'Cash' and not trx_id:
-            flash('Transaction ID is required for online payments', 'danger')
-            return render_template('book_consultation.html', consultant=consultants[0])
+        try:
+            consultant_id = int(consultant_id)
+            selected_slot = int(selected_slot)
+        except ValueError:
+            flash('Invalid consultant or time slot', 'danger')
+            return redirect(url_for('shaj.admin_adoptions'))
         
-        # Get next appointment ID
-        id_query = "SELECT COALESCE(MAX(id), 0) + 1 as next_id FROM ConsultationAppointment"
-        result = execute_query(id_query, fetch=True)
-        next_id = result[0]['next_id'] if result else 1
+        # Check if adoption exists
+        adoption_check = "SELECT * FROM Adopt WHERE animal_id = %s AND adopter_id = %s"
+        adoption = execute_query(adoption_check, (animal_id, adopter_id), fetch=True)
         
-        # Insert appointment
+        if not adoption:
+            flash('Adoption request not found', 'danger')
+            return redirect(url_for('shaj.admin_adoptions'))
+        
+        # Check if appointment already exists for this adoption
+        appointment_check = "SELECT * FROM Appointment WHERE adopter_id = %s AND consultant_id = %s AND timeslot_id = %s AND date = %s"
+        existing = execute_query(appointment_check, (adopter_id, consultant_id, selected_slot, selected_date), fetch=True)
+        
+        if existing:
+            flash('This appointment slot is already booked', 'danger')
+            return redirect(url_for('shaj.admin_adoptions'))
+        
+        # Insert into Appointment table for adoption appointment
         insert_query = """
-            INSERT INTO ConsultationAppointment 
-            (id, user_id, consultant_id, full_name, address, phone_no, appointment_date, 
-             time_slot, reason, consultation_method, payment_method, trx_id, status, created_at) 
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO Appointment (adopter_id, consultant_id, timeslot_id, date, link) 
+            VALUES (%s, %s, %s, %s, %s)
         """
-        current_datetime = datetime.now()
-        result = execute_query(insert_query, (
-            next_id, session['user_id'], consultant_id, full_name, address, phone_no,
-            appointment_date, time_slot, reason, method, payment_method, trx_id,
-            'pending', current_datetime
-        ))
+        result = execute_query(insert_query, (adopter_id, consultant_id, selected_slot, selected_date, link))
         
         if result is not None:
-            flash('Appointment booked successfully!', 'success')
-            return redirect(url_for('shaj.appointment_confirmation', appointment_id=next_id))
+            # Get details for notifications
+            adopter_query = "SELECT u.name as adopter_name FROM User u WHERE u.id = %s"
+            adopter = execute_query(adopter_query, (adopter_id,), fetch=True)
+            
+            consultant_query = "SELECT u.name as consultant_name FROM User u WHERE u.id = %s"
+            consultant = execute_query(consultant_query, (consultant_id,), fetch=True)
+            
+            animal_query = "SELECT title FROM Animal WHERE id = %s"
+            animal = execute_query(animal_query, (animal_id,), fetch=True)
+            
+            slot_query = "SELECT slot FROM TimeSlot WHERE id = %s"
+            slot = execute_query(slot_query, (selected_slot,), fetch=True)
+            
+            formatted_date = datetime.strptime(selected_date, '%Y-%m-%d').strftime('%d %b %Y')
+            slot_time = slot[0]['slot'] if slot else 'N/A'
+            
+            # Create notification for adopter
+            adopter_notif_title = "Adoption Appointment Scheduled!"
+            adopter_notif_content = f"Your adoption appointment for {animal[0]['title']} has been scheduled with {consultant[0]['consultant_name']}. Date: {formatted_date}, Time: {slot_time}. Meeting Link: {link}"
+            
+            adopter_notif_id_query = "SELECT COALESCE(MAX(id), 0) + 1 as next_id FROM Notification"
+            adopter_notif_id = execute_query(adopter_notif_id_query, fetch=True)[0]['next_id']
+            
+            adopter_insert = "INSERT INTO Notification (id, title, content, user_id) VALUES (%s, %s, %s, %s)"
+            execute_query(adopter_insert, (adopter_notif_id, adopter_notif_title, adopter_notif_content, adopter_id))
+            
+            # Create notification for consultant
+            consultant_notif_title = "New Adoption Appointment!"
+            consultant_notif_content = f"Adoption appointment scheduled with {adopter[0]['adopter_name']} for {animal[0]['title']}. Date: {formatted_date}, Time: {slot_time}. Meeting Link: {link}"
+            
+            consultant_notif_id_query = "SELECT COALESCE(MAX(id), 0) + 1 as next_id FROM Notification"
+            consultant_notif_id = execute_query(consultant_notif_id_query, fetch=True)[0]['next_id']
+            
+            consultant_insert = "INSERT INTO Notification (id, title, content, user_id) VALUES (%s, %s, %s, %s)"
+            execute_query(consultant_insert, (consultant_notif_id, consultant_notif_title, consultant_notif_content, consultant_id))
+            
+            flash('Adoption appointment set and notifications sent!', 'success')
         else:
-            flash('Booking failed. Please try again.', 'danger')
+            flash('Failed to set appointment', 'danger')
+        
+        return redirect(url_for('shaj.admin_adoptions'))
     
-    return render_template('book_consultation.html', consultant=consultants[0])
-
-@shaj_bp.route('/consultation/confirmation/<int:appointment_id>')
-def appointment_confirmation(appointment_id):
-    """Display appointment confirmation"""
-    if 'user_id' not in session:
-        flash('Please login first', 'warning')
-        return redirect(url_for('auth.login'))
+    # GET request - show form to set appointment
+    animal_query = "SELECT * FROM Animal WHERE id = %s"
+    animal = execute_query(animal_query, (animal_id,), fetch=True)
     
-    query = """
-        SELECT ca.*, c.full_name as consultant_name, c.phone_no as consultant_phone,
-               u.email as consultant_email
-        FROM ConsultationAppointment ca
-        LEFT JOIN Consultant c ON ca.consultant_id = c.user_id
-        LEFT JOIN User u ON c.user_id = u.id
-        WHERE ca.id = %s AND ca.user_id = %s
-    """
-    appointments = execute_query(query, (appointment_id, session['user_id']), fetch=True)
+    adopter_query = "SELECT * FROM User WHERE id = %s"
+    adopter = execute_query(adopter_query, (adopter_id,), fetch=True)
     
-    if not appointments:
-        flash('Appointment not found', 'danger')
-        return redirect(url_for('shaj.my_consultations'))
+    consultants_query = "SELECT u.id, u.name FROM User u INNER JOIN Consultant c ON u.id = c.user_id ORDER BY u.name"
+    consultants = execute_query(consultants_query, fetch=True) or []
     
-    return render_template('consultation_confirmation.html', appointment=appointments[0])
-
-@shaj_bp.route('/consultation/my-appointments')
-def my_consultations():
-    """Display user's consultation appointments"""
-    if 'user_id' not in session:
-        flash('Please login first', 'warning')
-        return redirect(url_for('auth.login'))
+    timeslots_query = "SELECT * FROM TimeSlot ORDER BY id"
+    timeslots = execute_query(timeslots_query, fetch=True) or []
     
-    query = """
-        SELECT ca.*, 
-               c.full_name as consultant_name, c.phone_no as consultant_phone,
-               u.email as consultant_email
-        FROM ConsultationAppointment ca
-        LEFT JOIN Consultant c ON ca.consultant_id = c.user_id
-        LEFT JOIN User u ON c.user_id = u.id
-        WHERE ca.user_id = %s
-        ORDER BY ca.appointment_date DESC, ca.time_slot DESC
-    """
-    appointments = execute_query(query, (session['user_id'],), fetch=True) or []
-    
-    return render_template('my_consultations.html', appointments=appointments)
-
-@shaj_bp.route('/consultation/cancel/<int:appointment_id>', methods=['POST'])
-def cancel_consultation(appointment_id):
-    """Cancel a consultation appointment"""
-    if 'user_id' not in session:
-        flash('Please login first', 'warning')
-        return redirect(url_for('auth.login'))
-    
-    # Check if appointment exists and belongs to user
-    check_query = """
-        SELECT * FROM ConsultationAppointment 
-        WHERE id = %s AND user_id = %s
-    """
-    appointment = execute_query(check_query, (appointment_id, session['user_id']), fetch=True)
-    
-    if not appointment:
-        flash('Appointment not found', 'danger')
-        return redirect(url_for('shaj.my_consultations'))
-    
-    # Check if appointment is already confirmed
-    if appointment[0]['status'] == 'confirmed':
-        flash('Cannot cancel a confirmed appointment. Please contact support.', 'warning')
-        return redirect(url_for('shaj.my_consultations'))
-    
-    # Update status to cancelled
-    update_query = """
-        UPDATE ConsultationAppointment 
-        SET status = 'cancelled', cancelled_at = %s
-        WHERE id = %s
-    """
-    result = execute_query(update_query, (datetime.now(), appointment_id))
-    
-    if result is not None:
-        # In a real application, you would initiate refund process here
-        flash('Appointment cancelled successfully. Refund will be processed within 3-5 business days.', 'info')
-    else:
-        flash('Failed to cancel appointment', 'danger')
-    
-    return redirect(url_for('shaj.my_consultations'))
+    return render_template('/adoption_appointment.html', 
+                          animal=animal[0] if animal else None,
+                          adopter=adopter[0] if adopter else None,
+                          consultants=consultants,
+                          timeslots=timeslots)

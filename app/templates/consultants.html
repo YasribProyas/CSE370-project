@@ -7,23 +7,20 @@
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1>Our Expert Consultants</h1>
-            <a href="{{ url_for('shaj.my_consultations') }}" class="btn btn-outline-primary">
-                <i class="bi bi-calendar-event"></i> My Appointments
-            </a>
         </div>
 
         <!-- Info Banner -->
         <div class="alert alert-info mb-4">
-            <div class="row align-items-center">
+            <div class="align-items-center">
                 <div class="col-md-8">
                     <h5 class="alert-heading">
                         <i class="bi bi-info-circle-fill"></i> Professional Consultation Services
                     </h5>
-                    <p class="mb-0">Book a consultation with our expert consultants for pet care advice, adoption guidance, and behavioral consultations. Only 50 taka per session!</p>
+                    <p class="mb-0">Book a consultation with our expert consultants for pet care advice, adoption guidance, and behavioral consultations. Only 500 taka per session!</p>
                 </div>
-                <div class="col-md-4 text-end">
-                    <div class="badge bg-success fs-4 p-3">
-                        <i class="bi bi-cash-coin"></i> 50 Taka/Session
+                <div class="">
+                    <div class="badge bg-success fs-4 p-4">
+                        <i class="bi bi-cash-coin"></i> 500 Taka/Session
                     </div>
                 </div>
             </div>
@@ -36,13 +33,13 @@
             <div class="col">
                 <div class="card h-100 shadow-sm">
                     <!-- Consultant Avatar -->
-                    <div class="card-img-top bg-gradient text-white d-flex align-items-center justify-content-center" 
+                    <!-- <div class="card-img-top bg-gradient text-white d-flex align-items-center justify-content-center" 
                          style="height: 150px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                         <i class="bi bi-person-circle" style="font-size: 5rem;"></i>
-                    </div>
+                    </div> -->
                     
                     <div class="card-body">
-                        <h5 class="card-title">{{ consultant.full_name or consultant.user_name }}</h5>
+                        <h5 class="card-title">{{ consultant.full_name or consultant.name }}</h5>
                         
                         <p class="card-text">
                             <i class="bi bi-telephone text-primary"></i> 
@@ -70,13 +67,13 @@
                         </div>
 
                         <div class="d-grid gap-2">
-                            <a href="{{ url_for('shaj.consultant_detail', consultant_id=consultant.user_id) }}" 
+                            <a href="{{ url_for('proyas.book_consultation', consultant_id=consultant.id) }}" 
                                class="btn btn-outline-primary">
                                 <i class="bi bi-info-circle"></i> View Profile
                             </a>
                             
                             {% if session.user_id %}
-                            <a href="{{ url_for('shaj.book_appointment', consultant_id=consultant.user_id) }}" 
+                            <a href="{{ url_for('proyas.book_consultation', consultant_id=consultant.id) }}" 
                                class="btn btn-success">
                                 <i class="bi bi-calendar-check"></i> Book Consultation
                             </a>
@@ -127,7 +124,7 @@
                     <div class="card-body">
                         <i class="bi bi-cash-coin text-warning" style="font-size: 3rem;"></i>
                         <h5 class="card-title mt-3">Affordable</h5>
-                        <p class="card-text">Only 50 taka per session with refundable cancellation option.</p>
+                        <p class="card-text">Only 500 taka per session with refundable cancellation option.</p>
                     </div>
                 </div>
             </div>
@@ -170,7 +167,7 @@
                             <i class="bi bi-3-circle-fill text-primary" style="font-size: 3rem;"></i>
                         </div>
                         <h6>Make Payment</h6>
-                        <p class="small text-muted">Pay 50 taka via bKash, Nagad, or Card</p>
+                        <p class="small text-muted">Pay 500 taka via bKash, Nagad, or Card</p>
                     </div>
                     <div class="col-md-3 text-center mb-3">
                         <div class="mb-3">
