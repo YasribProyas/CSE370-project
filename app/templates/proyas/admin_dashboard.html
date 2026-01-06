@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Havnhut{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="mb-3">Admin Dashboard</h1>
+            <p class="text-muted">Welcome back! Here's an overview of your system.</p>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card border-left-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted text-uppercase mb-1">Total Animals</h6>
+                            <h2 class="mb-0">{{ animals_count }}</h2>
+                        </div>
+                        <div style="font-size: 2.5rem; color: #0d6efd; opacity: 0.2;">
+                            🐕
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card border-left-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted text-uppercase mb-1">Total Users</h6>
+                            <h2 class="mb-0">{{ users_count }}</h2>
+                        </div>
+                        <div style="font-size: 2.5rem; color: #198754; opacity: 0.2;">
+                            👥
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card border-left-warning">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted text-uppercase mb-1">Total Admins</h6>
+                            <h2 class="mb-0">{{ admins_count }}</h2>
+                        </div>
+                        <div style="font-size: 2.5rem; color: #ffc107; opacity: 0.2;">
+                            👨‍💼
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card border-left-info">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted text-uppercase mb-1">Consultants</h6>
+                            <h2 class="mb-0">{{ consultants_count }}</h2>
+                        </div>
+                        <div style="font-size: 2.5rem; color: #0dcaf0; opacity: 0.2;">
+                            💼
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Animals Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">🐾 Recent Animals (Top 10)</h5>
+                    <a href="{{ url_for('proyas.manage_animals') }}" class="btn btn-light btn-sm">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if animals %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Title</th>
+                                    <th>Type</th>
+                                    <th>Breed</th>
+                                    <th>Age</th>
+                                    <th>Sex</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for animal in animals %}
+                                <tr>
+                                    <td><strong>{{ animal.id }}</strong></td>
+                                    <td>{{ animal.title }}</td>
+                                    <td>{{ animal.type }}</td>
+                                    <td>{{ animal.breed }}</td>
+                                    <td>{{ animal.age }} yrs</td>
+                                    <td>{{ animal.sex }}</td>
+                                    <td>
+                                        <a href="{{ url_for('proyas.edit_animal', animal_id=animal.id) }}" class="btn btn-sm btn-warning">Edit</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No animals found</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admins Section -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">👨‍💼 Admins (Top 10)</h5>
+                    <a href="{{ url_for('proyas.manage_users') }}" class="btn btn-light btn-sm">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if admins %}
+                    <div class="list-group list-group-flush">
+                        {% for admin in admins %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">{{ admin.name }}</h6>
+                                    <p class="mb-0 text-muted small">{{ admin.email }}</p>
+                                </div>
+                                <span class="badge bg-danger">Admin</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No admins found</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Consultants Section -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">💼 Consultants (Top 10)</h5>
+                    <a href="{{ url_for('proyas.add_consultant') }}" class="btn btn-light btn-sm">Add New</a>
+                </div>
+                <div class="card-body">
+                    {% if consultants %}
+                    <div class="list-group list-group-flush">
+                        {% for consultant in consultants %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">{{ consultant.full_name }}</h6>
+                                    <p class="mb-0 text-muted small">{{ consultant.email }}</p>
+                                    <p class="mb-0 text-muted small">{{ consultant.phone_no }}</p>
+                                </div>
+                                <span class="badge bg-info">Consultant</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No consultants found</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- General Users Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">👤 General Users (Top 10)</h5>
+                    <a href="{{ url_for('proyas.manage_users') }}" class="btn btn-light btn-sm">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if general_users %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in general_users %}
+                                <tr>
+                                    <td><strong>{{ user.id }}</strong></td>
+                                    <td>{{ user.name }}</td>
+                                    <td>{{ user.email }}</td>
+                                    <td>
+                                        <form method="POST" action="{{ url_for('proyas.make_admin', user_id=user.id) }}" style="display:inline;">
+                                            <button type="submit" class="btn btn-sm btn-warning">Make Admin</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No general users found</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .border-left-primary {
+        border-left: 4px solid #0d6efd !important;
+    }
+    .border-left-success {
+        border-left: 4px solid #198754 !important;
+    }
+    .border-left-warning {
+        border-left: 4px solid #ffc107 !important;
+    }
+    .border-left-info {
+        border-left: 4px solid #0dcaf0 !important;
+    }
+</style>
+{% endblock %}

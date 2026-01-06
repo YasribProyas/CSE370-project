@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Users - Havnhut Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="mb-3">👥 User Management</h1>
+        </div>
+        <div class="col-auto">
+            <a href="{{ url_for('proyas.add_consultant') }}" class="btn btn-info btn-lg">
+                <i class="bi bi-plus"></i> Add Consultant
+            </a>
+            <a href="{{ url_for('proyas.admin_dashboard') }}" class="btn btn-secondary btn-lg">
+                Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    {% if users %}
+    <div class="table-responsive">
+        <table class="table table-hover table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td><strong>{{ user.id }}</strong></td>
+                    <td>{{ user.name }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>
+                        <span class="badge bg-{% if user.role == 'Admin' %}danger{% elif user.role == 'Consultant' %}info{% else %}secondary{% endif %}">
+                            {{ user.role }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if user.role != 'Admin' %}
+                        <form method="POST" action="{{ url_for('proyas.make_admin', user_id=user.id) }}" 
+                              style="display:inline;" 
+                              onsubmit="return confirm('Make this user an admin?');">
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                <i class="bi bi-shield-check"></i> Make Admin
+                            </button>
+                        </form>
+                        {% else %}
+                        <form method="POST" action="{{ url_for('proyas.remove_admin', user_id=user.id) }}" 
+                              style="display:inline;" 
+                              onsubmit="return confirm('Remove admin access?');">
+                            <button type="submit" class="btn btn-sm btn-warning">
+                                <i class="bi bi-shield-x"></i> Remove Admin
+                            </button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <h5>No users found</h5>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
