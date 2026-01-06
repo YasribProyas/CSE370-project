@@ -4,7 +4,3 @@ venv/
 .env
 .proyas
 **/__pycache__/
-
-
-
-git rm -r --cached ./app/auth/__pycache__ ./app/fahim/__pycache__ ./app/main/__pycache__ ./app/proyas/__pycache__ ./app/shaj/__pycache__ ./app/__pycache__
