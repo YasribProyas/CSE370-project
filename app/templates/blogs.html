@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Blogs - Havnhut{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>User Blogs</h1>
+            {% if session.user_id %}
+            <a href="{{ url_for('fahim.create_blog') }}" class="btn btn-success">
+                Write a Blog
+            </a>
+            {% endif %}
+        </div>
+
+        {% if blogs %}
+        <div class="row g-4">
+            {% for blog in blogs %}
+            <div class="col-12">
+                <div class="card post-card">
+                    <div class="card-body">
+
+                        <div class="mb-2">
+                            <h5 class="card-title mb-1">{{ blog.title }}</h5>
+                            <p class="text-muted small mb-0">
+                                By {{ blog.author_name or 'User' }} • {{ blog.date }}
+                                {% if blog.time %} • {{ blog.time }}{% endif %}
+                            </p>
+                        </div>
+
+                        {% if blog.img_url %}
+                        <div class="blog-image-wrapper mb-3">
+                            <img src="{{ blog.img_url }}" alt="Blog Image">
+                        </div>
+                        {% endif %}
+
+                        <p class="card-text">
+                            {{ blog.content[:250] }}{% if blog.content|length > 250 %}...{% endif %}
+                        </p>
+
+                        <!-- ❤️ COMMENT + LOVE REACT -->
+                        <div class="d-flex gap-4 text-muted mt-3 align-items-center">
+                            <span>
+                                <i class="bi bi-chat"></i> {{ blog.comment_count or 0 }} Comments
+                            </span>
+
+                            {% if session.user_id %}
+                            <form method="POST"
+                                  action="{{ url_for('fahim.like_blog', blog_id=blog.id) }}">
+                                <button type="submit"
+                                        class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1">
+                                    ❤️ {{ blog.like_count or 0 }}
+                                </button>
+                            </form>
+                            {% else %}
+                            <span>
+                                ❤️ {{ blog.like_count or 0 }}
+                            </span>
+                            {% endif %}
+                        </div>
+
+                        <a href="{{ url_for('fahim.blog_detail', blog_id=blog.id) }}"
+                           class="btn btn-primary btn-sm mt-3">
+                            Read Blog
+                        </a>
+
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            No blogs have been posted yet.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.blog-image-wrapper {
+    width: 100%;
+    max-height: 420px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.blog-image-wrapper img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+</style>
+
+{% endblock %}

@@ -93,7 +93,7 @@ CREATE TABLE Appointment (
 );
 
 CREATE TABLE Blog (
-    id INT PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255),
     content TEXT,
     img_url VARCHAR(255),
@@ -103,8 +103,10 @@ CREATE TABLE Blog (
     FOREIGN KEY (user_id) REFERENCES User(id) ON DELETE SET NULL
 );
 
+
+
 CREATE TABLE Blog_Comment (
-    id INT PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     content TEXT,
     date DATE,
     time TIME,
@@ -113,6 +115,7 @@ CREATE TABLE Blog_Comment (
     FOREIGN KEY (user_id) REFERENCES User(id) ON DELETE CASCADE,
     FOREIGN KEY (blog_id) REFERENCES Blog(id) ON DELETE CASCADE
 );
+
 
 CREATE TABLE Blog_Like (
     user_id INT,
