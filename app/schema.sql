@@ -89,10 +89,12 @@ CREATE TABLE Appointment (
     date DATE,
     trx_id VARCHAR(100),
     link VARCHAR(255),
-    PRIMARY KEY (adopter_id, consultant_id, timeslot_id),
+    animal_id INT,
+    PRIMARY KEY (adopter_id, consultant_id, timeslot_id, date),
     FOREIGN KEY (adopter_id) REFERENCES Adopter(user_id) ON DELETE CASCADE,
     FOREIGN KEY (consultant_id) REFERENCES Consultant(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (timeslot_id) REFERENCES TimeSlot(id) ON DELETE CASCADE
+    FOREIGN KEY (timeslot_id) REFERENCES TimeSlot(id) ON DELETE CASCADE,
+    FOREIGN KEY (animal_id) REFERENCES Animal(id) ON DELETE CASCADE
 );
 
 CREATE TABLE Blog (

@@ -216,22 +216,6 @@ def admin_required(f):
     return decorated_function
 
 
-@shaj_bp.route('/admin/adoptions')
-@admin_required
-def admin_adoptions():
-    """Admin view of all pending adoption requests"""
-    query = """
-        SELECT a.*, an.title, an.breed, an.type, u.name as adopter_name, ad.full_name, ad.phone_no
-        FROM Adopt a
-        INNER JOIN Animal an ON a.animal_id = an.id
-        INNER JOIN Adopter ad ON a.adopter_id = ad.user_id
-        INNER JOIN User u ON a.adopter_id = u.id
-        WHERE a.approved = FALSE
-        ORDER BY a.adoption_date DESC
-    """
-    pending_adoptions = execute_query(query, fetch=True) or []
-    return render_template('/admin_adoptions.html', adoptions=pending_adoptions)
-
 
 @shaj_bp.route('/admin/adoptions/set-appointment/<int:animal_id>/<int:adopter_id>', methods=['GET', 'POST'])
 @admin_required
@@ -245,14 +229,14 @@ def set_adoption_appointment(animal_id, adopter_id):
         
         if not all([consultant_id, selected_date, selected_slot]):
             flash('Please select consultant, date, and time slot', 'danger')
-            return redirect(url_for('shaj.admin_adoptions'))
+            return redirect(url_for('proyas.admin_dashboard'))
         
         try:
             consultant_id = int(consultant_id)
             selected_slot = int(selected_slot)
         except ValueError:
             flash('Invalid consultant or time slot', 'danger')
-            return redirect(url_for('shaj.admin_adoptions'))
+            return redirect(url_for('proyas.admin_dashboard'))
         
         # Check if adoption exists
         adoption_check = "SELECT * FROM Adopt WHERE animal_id = %s AND adopter_id = %s"
@@ -260,7 +244,7 @@ def set_adoption_appointment(animal_id, adopter_id):
         
         if not adoption:
             flash('Adoption request not found', 'danger')
-            return redirect(url_for('shaj.admin_adoptions'))
+            return redirect(url_for('proyas.admin_dashboard'))
         
         # Check if appointment already exists for this adoption
         appointment_check = "SELECT * FROM Appointment WHERE adopter_id = %s AND consultant_id = %s AND timeslot_id = %s AND date = %s"
@@ -268,14 +252,14 @@ def set_adoption_appointment(animal_id, adopter_id):
         
         if existing:
             flash('This appointment slot is already booked', 'danger')
-            return redirect(url_for('shaj.admin_adoptions'))
+            return redirect(url_for('proyas.admin_dashboard'))
         
         # Insert into Appointment table for adoption appointment
         insert_query = """
-            INSERT INTO Appointment (adopter_id, consultant_id, timeslot_id, date, link) 
-            VALUES (%s, %s, %s, %s, %s)
+            INSERT INTO Appointment (adopter_id, consultant_id, timeslot_id, date, link, animal_id) 
+            VALUES (%s, %s, %s, %s, %s, %s)
         """
-        result = execute_query(insert_query, (adopter_id, consultant_id, selected_slot, selected_date, link))
+        result = execute_query(insert_query, (adopter_id, consultant_id, selected_slot, selected_date, link, animal_id))
         
         if result is not None:
             # Get details for notifications
@@ -318,7 +302,7 @@ def set_adoption_appointment(animal_id, adopter_id):
         else:
             flash('Failed to set appointment', 'danger')
         
-        return redirect(url_for('shaj.admin_adoptions'))
+        return redirect(url_for('proyas.admin_dashboard'))
     
     # GET request - show form to set appointment
     animal_query = "SELECT * FROM Animal WHERE id = %s"
@@ -333,7 +317,7 @@ def set_adoption_appointment(animal_id, adopter_id):
     timeslots_query = "SELECT * FROM TimeSlot ORDER BY id"
     timeslots = execute_query(timeslots_query, fetch=True) or []
     
-    return render_template('/adoption_appointment.html', 
+    return render_template('adoption_appointment.html', 
                           animal=animal[0] if animal else None,
                           adopter=adopter[0] if adopter else None,
                           consultants=consultants,

@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Schedule Adoption Appointment - Havnhut{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0"><i class="bi bi-heart"></i> Schedule Adoption Appointment</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Animal Info -->
+                    {% if animal %}
+                    <div class="mb-4 p-3 bg-light border-left-5" style="border-left: 5px solid #dc3545;">
+                        <h5 class="mb-2"><i class="bi bi-paw"></i> Animal Details</h5>
+                        <p class="mb-1"><strong>Animal:</strong> {{ animal.title }}</p>
+                        <p class="mb-1"><strong>Type:</strong> {{ animal.type }}</p>
+                        <p class="mb-0"><strong>Breed:</strong> {{ animal.breed }}</p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Adopter Info -->
+                    {% if adopter %}
+                    <div class="mb-4 p-3 bg-light border-left-5" style="border-left: 5px solid #198754;">
+                        <h5 class="mb-2"><i class="bi bi-person"></i> Adopter Details</h5>
+                        <p class="mb-1"><strong>Name:</strong> {{ adopter.name }}</p>
+                        <p class="mb-0"><strong>Email:</strong> {{ adopter.email }}</p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Appointment Form -->
+                    <form method="POST">
+                        <div class="row">
+                            <!-- Consultant Selection -->
+                            <div class="col-md-6 mb-3">
+                                <label for="consultant_id" class="form-label"><strong>Select Consultant</strong></label>
+                                <select class="form-select" id="consultant_id" name="consultant_id" required>
+                                    <option value="">-- Choose Consultant --</option>
+                                    {% for consultant in consultants %}
+                                    <option value="{{ consultant.id }}">{{ consultant.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Date Selection -->
+                            <div class="col-md-6 mb-3">
+                                <label for="adoption_date" class="form-label"><strong>Select Date</strong></label>
+                                <input type="date" class="form-control" id="adoption_date" name="adoption_date" required>
+                                <small class="text-muted">Select a date within the next 7 days</small>
+                            </div>
+                        </div>
+
+                        <!-- Time Slot Selection -->
+                        <div class="mb-3">
+                            <label for="timeslot_id" class="form-label"><strong>Select Time Slot</strong></label>
+                            <div id="slotsContainer" class="row g-2">
+                                {% for slot in timeslots %}
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="timeslot_id" id="slot_{{ slot.id }}" value="{{ slot.id }}" required>
+                                        <label class="form-check-label" for="slot_{{ slot.id }}">
+                                            {{ slot.slot }}
+                                        </label>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Meeting Link -->
+                        <div class="mb-3">
+                            <label for="link" class="form-label"><strong>Meeting Link</strong></label>
+                            <input type="url" class="form-control" id="link" name="link" placeholder="https://zoom.us/j/..." required>
+                            <small class="text-muted">Paste the Zoom or Google Meet link for the appointment</small>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('proyas.admin_dashboard') }}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Schedule Appointment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Set min and max dates (today to 7 days from now)
+    document.addEventListener('DOMContentLoaded', function() {
+        const dateInput = document.getElementById('adoption_date');
+        const today = new Date();
+        const sevenDaysFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+        const formatDate = (date) => date.toISOString().split('T')[0];
+        
+        dateInput.min = formatDate(today);
+        dateInput.max = formatDate(sevenDaysFromNow);
+    });
+</script>
+
+<style>
+    .border-left-5 {
+        border-left: 5px solid;
+    }
+</style>
+{% endblock %}

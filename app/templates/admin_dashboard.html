@@ -303,6 +303,51 @@
             </div>
         </div>
     </div>
+
+    <!-- Pending Adoption Requests Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">❤️ Pending Adoption Requests</h5>
+                </div>
+                <div class="card-body">
+                    {% if pending_adoptions %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Animal</th>
+                                    <th>Adopter</th>
+                                    <th>Phone</th>
+                                    <th>Request Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for adoption in pending_adoptions %}
+                                <tr>
+                                    <td><strong>{{ adoption.title }}</strong> ({{ adoption.type }})</td>
+                                    <td>{{ adoption.adopter_name }}</td>
+                                    <td>{{ adoption.phone_no }}</td>
+                                    <td>{{ adoption.adoption_date }}</td>
+                                    <td>
+                                        <a href="{{ url_for('shaj.set_adoption_appointment', animal_id=adoption.animal_id, adopter_id=adoption.adopter_id) }}" class="btn btn-sm btn-success">
+                                            <i class="bi bi-calendar-check"></i> Schedule
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No pending adoption requests</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <style>

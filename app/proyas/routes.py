@@ -45,6 +45,7 @@ def admin_dashboard():
         INNER JOIN User u ON a.adopter_id = u.id
         INNER JOIN Consultant c ON a.consultant_id = c.user_id
         INNER JOIN User uc ON a.consultant_id = uc.id
+        WHERE a.animal_id IS NULL
         ORDER BY a.date ASC, a.timeslot_id ASC
         LIMIT 10
     """
@@ -53,6 +54,19 @@ def admin_dashboard():
     # Add time slot information
     for consultation in pending_consultations:
         consultation['slot_time'] = get_slot_time(consultation['timeslot_id'])
+    
+    # Get pending adoption requests (not yet scheduled)
+    adoptions_query = """
+        SELECT a.*, an.title, an.breed, an.type, u.name as adopter_name, ad.full_name, ad.phone_no
+        FROM Adopt a
+        INNER JOIN Animal an ON a.animal_id = an.id
+        INNER JOIN Adopter ad ON a.adopter_id = ad.user_id
+        INNER JOIN User u ON a.adopter_id = u.id
+        WHERE a.approved = FALSE
+        ORDER BY a.adoption_date DESC
+        LIMIT 10
+    """
+    pending_adoptions = execute_query(adoptions_query, fetch=True) or []
     
     return render_template('/admin_dashboard.html',
                          animals_count=animals_count[0]['count'] if animals_count else 0,
@@ -63,7 +77,8 @@ def admin_dashboard():
                          admins=admins or [],
                          consultants=consultants or [],
                          general_users=general_users or [],
-                         pending_consultations=pending_consultations)
+                         pending_consultations=pending_consultations,
+                         pending_adoptions=pending_adoptions)
 
 
 @proyas_bp.route('/admin/animals')
@@ -518,24 +533,25 @@ def my_consultations():
     adoptions = []
     
     if is_consultant:
-        # Get consultation bookings where user is the consultant
+        # Get consultation bookings where user is the consultant (animal_id IS NULL)
         consult_query = """
             SELECT a.*, u.name as adopter_name, 'consultation' as type
             FROM Appointment a
             INNER JOIN User u ON a.adopter_id = u.id
-            WHERE a.consultant_id = %s
+            WHERE a.consultant_id = %s AND a.animal_id IS NULL
             ORDER BY a.date DESC, a.timeslot_id
         """
         consultations = execute_query(consult_query, (session['user_id'],), fetch=True) or []
         
-        # Get adoption appointments where user is the consultant
+        # Get adoption appointments where user is the consultant (animal_id IS NOT NULL)
         adopt_query = """
-            SELECT ap.*, ad.animal_id, an.title as animal_name, u.name as adopter_name, 'adoption' as type
+            SELECT ap.*, an.title as animal_name, u.name as adopter_name, 'adoption' as type
             FROM Appointment ap
             INNER JOIN User u ON ap.adopter_id = u.id
-            INNER JOIN Adopt ad ON ad.adopter_id = ap.adopter_id
-            INNER JOIN Animal an ON ad.animal_id = an.id
+            INNER JOIN Animal an ON ap.animal_id = an.id
+            INNER JOIN Adopt ad ON ad.animal_id = ap.animal_id AND ad.adopter_id = ap.adopter_id
             WHERE ap.consultant_id = %s
+            AND ap.animal_id IS NOT NULL
             AND ad.approved = FALSE
             ORDER BY ap.date DESC, ap.timeslot_id
         """
@@ -547,13 +563,13 @@ def my_consultations():
         for item in adoptions:
             item['slot_time'] = get_slot_time(item['timeslot_id'])
     else:
-        # Regular adopter viewing their consultations
+        # Regular adopter viewing their consultations (animal_id IS NULL)
         query = """
             SELECT a.*, u.name as consultant_name, c.full_name as consultant_full_name, 'consultation' as type
             FROM Appointment a
             INNER JOIN User u ON a.consultant_id = u.id
             INNER JOIN Consultant c ON a.consultant_id = c.user_id
-            WHERE a.adopter_id = %s
+            WHERE a.adopter_id = %s AND a.animal_id IS NULL
             ORDER BY a.date DESC, a.timeslot_id
         """
         consultations = execute_query(query, (session['user_id'],), fetch=True) or []
@@ -606,7 +622,7 @@ def cancel_consultation(consultant_id, consultation_date, slot_id):
 @proyas_bp.route('/admin/consultations')
 @admin_required
 def admin_consultations():
-    """Admin view all pending consultations"""
+    """Admin view all pending consultations (exclude adoptions)"""
     query = """
         SELECT a.*, 
                u.name as user_name, 
@@ -617,6 +633,7 @@ def admin_consultations():
         INNER JOIN User u ON a.adopter_id = u.id
         INNER JOIN Consultant c ON a.consultant_id = c.user_id
         INNER JOIN User uc ON a.consultant_id = uc.id
+        WHERE a.animal_id IS NULL
         ORDER BY a.date ASC, a.timeslot_id ASC
     """
     consultations = execute_query(query, fetch=True) or []
@@ -693,16 +710,28 @@ def approve_adoption(adopter_id, consultant_id, adoption_date, slot_id):
         flash('You do not have permission to approve this adoption', 'danger')
         return redirect(url_for('proyas.my_consultations'))
     
+    # Get the animal_id from the appointment
+    appointment_query = """
+        SELECT animal_id FROM Appointment
+        WHERE adopter_id = %s AND consultant_id = %s AND date = %s AND timeslot_id = %s AND animal_id IS NOT NULL
+    """
+    appointment = execute_query(appointment_query, (adopter_id, consultant_id, adoption_date, slot_id), fetch=True)
+    
+    if not appointment or not appointment[0]['animal_id']:
+        flash('Adoption appointment not found', 'danger')
+        return redirect(url_for('proyas.my_consultations'))
+    
+    animal_id = appointment[0]['animal_id']
+    
     # Get adoption and appointment details
     adopt_query = """
         SELECT ad.animal_id, ad.adopter_id, u.name as adopter_name, an.title as animal_name
         FROM Adopt ad
         INNER JOIN User u ON ad.adopter_id = u.id
         INNER JOIN Animal an ON ad.animal_id = an.id
-        WHERE ad.adopter_id = %s
-        LIMIT 1
+        WHERE ad.adopter_id = %s AND ad.animal_id = %s
     """
-    adoption = execute_query(adopt_query, (adopter_id,), fetch=True)
+    adoption = execute_query(adopt_query, (adopter_id, animal_id), fetch=True)
     
     if adoption:
         animal_id = adoption[0]['animal_id']
@@ -740,16 +769,28 @@ def reject_adoption(adopter_id, consultant_id, adoption_date, slot_id):
         flash('You do not have permission to reject this adoption', 'danger')
         return redirect(url_for('proyas.my_consultations'))
     
+    # Get the animal_id from the appointment
+    appointment_query = """
+        SELECT animal_id FROM Appointment
+        WHERE adopter_id = %s AND consultant_id = %s AND date = %s AND timeslot_id = %s AND animal_id IS NOT NULL
+    """
+    appointment = execute_query(appointment_query, (adopter_id, consultant_id, adoption_date, slot_id), fetch=True)
+    
+    if not appointment or not appointment[0]['animal_id']:
+        flash('Adoption appointment not found', 'danger')
+        return redirect(url_for('proyas.my_consultations'))
+    
+    animal_id = appointment[0]['animal_id']
+    
     # Get adoption and appointment details
     adopt_query = """
         SELECT ad.animal_id, ad.adopter_id, u.name as adopter_name, an.title as animal_name
         FROM Adopt ad
         INNER JOIN User u ON ad.adopter_id = u.id
         INNER JOIN Animal an ON ad.animal_id = an.id
-        WHERE ad.adopter_id = %s
-        LIMIT 1
+        WHERE ad.adopter_id = %s AND ad.animal_id = %s
     """
-    adoption = execute_query(adopt_query, (adopter_id,), fetch=True)
+    adoption = execute_query(adopt_query, (adopter_id, animal_id), fetch=True)
     
     if adoption:
         animal_id = adoption[0]['animal_id']

@@ -5,7 +5,13 @@ from datetime import datetime
 
 @main_bp.route('/')
 def index():
-    animals = execute_query("SELECT * FROM Animal ORDER BY id DESC LIMIT 10", fetch=True) or []
+    # Get animals that are not approved for adoption
+    animals = execute_query("""
+        SELECT a.* FROM Animal a
+        LEFT JOIN Adopt ad ON a.id = ad.animal_id AND ad.approved = TRUE
+        WHERE ad.animal_id IS NULL
+        ORDER BY a.id DESC LIMIT 10
+    """, fetch=True) or []
     
     posts = execute_query("""
         SELECT p.*, u.name as author_name 
@@ -19,7 +25,11 @@ def index():
     categories = ['Cat', 'Dog', 'Bird', 'Other']
     category_counts = {}
     for category in categories:
-        count_query = "SELECT COUNT(*) as count FROM Animal WHERE type = %s"
+        count_query = """
+            SELECT COUNT(*) as count FROM Animal a
+            LEFT JOIN Adopt ad ON a.id = ad.animal_id AND ad.approved = TRUE
+            WHERE a.type = %s AND ad.animal_id IS NULL
+        """
         result = execute_query(count_query, (category,), fetch=True)
         category_counts[category] = result[0]['count'] if result else 0
     
@@ -34,10 +44,20 @@ def animals():
     animal_type = request.args.get('type', '')
     
     if animal_type:
-        query = "SELECT * FROM Animal WHERE type = %s ORDER BY id DESC"
+        query = """
+            SELECT a.* FROM Animal a
+            LEFT JOIN Adopt ad ON a.id = ad.animal_id AND ad.approved = TRUE
+            WHERE a.type = %s AND ad.animal_id IS NULL
+            ORDER BY a.id DESC
+        """
         animals = execute_query(query, (animal_type,), fetch=True) or []
     else:
-        query = "SELECT * FROM Animal ORDER BY id DESC"
+        query = """
+            SELECT a.* FROM Animal a
+            LEFT JOIN Adopt ad ON a.id = ad.animal_id AND ad.approved = TRUE
+            WHERE ad.animal_id IS NULL
+            ORDER BY a.id DESC
+        """
         animals = execute_query(query, fetch=True) or []
     
     return render_template('animals.html', animals=animals, animal_type=animal_type)
