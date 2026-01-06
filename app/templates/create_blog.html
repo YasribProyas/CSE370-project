@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if blog %}Edit Blog - Havnhut{% else %}Create Blog - Havnhut{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 col-md-8 mx-auto">
+        <div class="card post-card">
+            <div class="card-body">
+
+                <h3 class="mb-4">
+                    {% if blog %}Edit Blog{% else %}Write a New Blog{% endif %}
+                </h3>
+
+                <form method="POST" enctype="multipart/form-data">
+
+                    {# ===== Hidden blog_id for edit ===== #}
+                    {% if blog %}
+                    <input type="hidden" name="blog_id" value="{{ blog.id }}">
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label class="form-label">Title</label>
+                        <input type="text"
+                               name="title"
+                               class="form-control"
+                               value="{{ blog.title if blog }}"
+                               required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            {% if blog %}Change Image (optional){% else %}Upload Image (optional){% endif %}
+                        </label>
+                        <input type="file" name="image" class="form-control">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Content</label>
+                        <textarea name="content"
+                                  rows="6"
+                                  class="form-control"
+                                  required>{{ blog.content if blog }}</textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-success">
+                        {% if blog %}Update Blog{% else %}Post Blog{% endif %}
+                    </button>
+
+                    <a href="{{ url_for('fahim.blogs') }}"
+                       class="btn btn-secondary ms-2">
+                        Cancel
+                    </a>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
