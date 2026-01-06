@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Create Post{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+
+        <h2 class="mb-4">Create New Post</h2>
+
+        <form method="POST" enctype="multipart/form-data">
+
+            <!-- Post Content -->
+            <div class="mb-3">
+                <label class="form-label">Post Content</label>
+                <textarea name="content"
+                          class="form-control"
+                          rows="5"
+                          placeholder="Write something..."
+                          required></textarea>
+            </div>
+
+            <!-- Image Upload -->
+            <div class="mb-3">
+                <label class="form-label">Upload Image (optional)</label>
+                <input type="file" name="image" class="form-control">
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" class="btn btn-success">
+                Publish Post
+            </button>
+
+            <a href="{{ url_for('fahim.posts') }}"
+               class="btn btn-secondary ms-2">
+                Cancel
+            </a>
+
+        </form>
+
+    </div>
+</div>
+{% endblock %}

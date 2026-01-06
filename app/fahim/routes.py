@@ -7,7 +7,7 @@ from werkzeug.utils import secure_filename
 
 
 # =========================
-# ADMIN POSTS (ALREADY EXISTING)
+# ADMIN POSTS
 # =========================
 
 @fahim_bp.route('/posts')
@@ -24,6 +24,42 @@ def posts():
     return render_template('posts.html', posts=posts)
 
 
+@fahim_bp.route('/post/create', methods=['GET', 'POST'])
+def create_post():
+    if 'user_id' not in session or not session.get('is_admin'):
+        flash('Admin access required', 'danger')
+        return redirect(url_for('auth.login'))
+
+    if request.method == 'POST':
+        content = request.form.get('content')
+        image = request.files.get('image')
+
+        if not content:
+            flash('Post content is required', 'danger')
+            return redirect(url_for('fahim.create_post'))
+
+        img_url = None
+        if image and image.filename:
+            filename = secure_filename(image.filename)
+            upload_path = os.path.join('app/static/uploads', filename)
+            image.save(upload_path)
+            img_url = f'/static/uploads/{filename}'
+
+        now = datetime.now()
+        execute_query(
+            """
+            INSERT INTO Post (content, img_url, date, time, admin_id)
+            VALUES (%s, %s, %s, %s, %s)
+            """,
+            (content, img_url, now.date(), now.time(), session['user_id'])
+        )
+
+        flash('Post published successfully!', 'success')
+        return redirect(url_for('fahim.posts'))
+
+    return render_template('create_post.html')
+
+
 @fahim_bp.route('/post/<int:post_id>')
 def post_detail(post_id):
     post_query = """
@@ -37,7 +73,7 @@ def post_detail(post_id):
 
     if not posts:
         flash('Post not found', 'danger')
-        return redirect(url_for('main.posts'))
+        return redirect(url_for('fahim.posts'))
 
     comments_query = """
         SELECT pc.*, u.name AS author_name
@@ -58,24 +94,25 @@ def like_post(post_id):
         return redirect(url_for('auth.login'))
 
     user_id = session['user_id']
-
-    check_query = "SELECT 1 FROM Post_Like WHERE user_id = %s AND post_id = %s"
-    existing = execute_query(check_query, (user_id, post_id), fetch=True)
+    existing = execute_query(
+        "SELECT 1 FROM Post_Like WHERE user_id=%s AND post_id=%s",
+        (user_id, post_id),
+        fetch=True
+    )
 
     if existing:
-        delete_query = "DELETE FROM Post_Like WHERE user_id = %s AND post_id = %s"
-        execute_query(delete_query, (user_id, post_id))
-        flash('Post unliked', 'info')
+        execute_query(
+            "DELETE FROM Post_Like WHERE user_id=%s AND post_id=%s",
+            (user_id, post_id)
+        )
     else:
-        insert_query = """
-            INSERT INTO Post_Like (user_id, post_id, date, time)
-            VALUES (%s, %s, %s, %s)
-        """
         now = datetime.now()
-        execute_query(insert_query, (user_id, post_id, now.date(), now.time()))
-        flash('Post liked!', 'success')
+        execute_query(
+            "INSERT INTO Post_Like (user_id, post_id, date, time) VALUES (%s, %s, %s, %s)",
+            (user_id, post_id, now.date(), now.time())
+        )
 
-    return redirect(url_for('main.post_detail', post_id=post_id))
+    return redirect(request.referrer)
 
 
 @fahim_bp.route('/post/<int:post_id>/comment', methods=['POST'])
@@ -87,24 +124,23 @@ def comment_post(post_id):
     content = request.form.get('content')
     if not content:
         flash('Comment cannot be empty', 'danger')
-        return redirect(url_for('main.post_detail', post_id=post_id))
+        return redirect(url_for('fahim.post_detail', post_id=post_id))
 
-    insert_query = """
-        INSERT INTO Post_Comment (content, date, time, user_id, post_id)
-        VALUES (%s, %s, %s, %s, %s)
-    """
     now = datetime.now()
     execute_query(
-        insert_query,
+        """
+        INSERT INTO Post_Comment (content, date, time, user_id, post_id)
+        VALUES (%s, %s, %s, %s, %s)
+        """,
         (content, now.date(), now.time(), session['user_id'], post_id)
     )
 
     flash('Comment added!', 'success')
-    return redirect(url_for('main.post_detail', post_id=post_id))
+    return redirect(url_for('fahim.post_detail', post_id=post_id))
 
 
 # =========================
-# USER BLOG SYSTEM (UPDATED WITH LOVE REACT)
+# USER BLOG SYSTEM
 # =========================
 
 @fahim_bp.route('/blogs')
@@ -155,23 +191,23 @@ def like_blog(blog_id):
         return redirect(url_for('auth.login'))
 
     user_id = session['user_id']
-
-    check_query = "SELECT 1 FROM Blog_Like WHERE user_id = %s AND blog_id = %s"
-    existing = execute_query(check_query, (user_id, blog_id), fetch=True)
+    existing = execute_query(
+        "SELECT 1 FROM Blog_Like WHERE user_id=%s AND blog_id=%s",
+        (user_id, blog_id),
+        fetch=True
+    )
 
     if existing:
         execute_query(
-            "DELETE FROM Blog_Like WHERE user_id = %s AND blog_id = %s",
+            "DELETE FROM Blog_Like WHERE user_id=%s AND blog_id=%s",
             (user_id, blog_id)
         )
-        flash('Love removed', 'info')
     else:
         now = datetime.now()
         execute_query(
             "INSERT INTO Blog_Like (user_id, blog_id, date, time) VALUES (%s, %s, %s, %s)",
             (user_id, blog_id, now.date(), now.time())
         )
-        flash('Loved ❤️', 'success')
 
     return redirect(request.referrer or url_for('fahim.blogs'))
 
@@ -187,23 +223,18 @@ def comment_blog(blog_id):
         flash('Comment cannot be empty', 'danger')
         return redirect(url_for('fahim.blog_detail', blog_id=blog_id))
 
-    insert_query = """
-        INSERT INTO Blog_Comment (content, date, time, user_id, blog_id)
-        VALUES (%s, %s, %s, %s, %s)
-    """
     now = datetime.now()
     execute_query(
-        insert_query,
+        """
+        INSERT INTO Blog_Comment (content, date, time, user_id, blog_id)
+        VALUES (%s, %s, %s, %s, %s)
+        """,
         (content, now.date(), now.time(), session['user_id'], blog_id)
     )
 
     flash('Comment added!', 'success')
     return redirect(url_for('fahim.blog_detail', blog_id=blog_id))
 
-
-# =========================
-# BLOG CREATE (IMAGE UPLOAD)
-# =========================
 
 @fahim_bp.route('/blog/create', methods=['GET', 'POST'])
 def create_blog():
@@ -221,21 +252,18 @@ def create_blog():
             return redirect(url_for('fahim.create_blog'))
 
         img_url = None
-
-        if image and image.filename != '':
+        if image and image.filename:
             filename = secure_filename(image.filename)
             upload_path = os.path.join('app/static/uploads', filename)
             image.save(upload_path)
             img_url = f'/static/uploads/{filename}'
 
-        insert_query = """
-            INSERT INTO Blog (title, content, img_url, date, time, user_id)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        """
-
         now = datetime.now()
         execute_query(
-            insert_query,
+            """
+            INSERT INTO Blog (title, content, img_url, date, time, user_id)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            """,
             (title, content, img_url, now.date(), now.time(), session['user_id'])
         )
 
@@ -243,74 +271,3 @@ def create_blog():
         return redirect(url_for('fahim.blogs'))
 
     return render_template('create_blog.html')
-
-
-# =========================
-# BLOG EDIT
-# =========================
-
-@fahim_bp.route('/blog/<int:blog_id>/edit', methods=['GET', 'POST'])
-def edit_blog(blog_id):
-    if 'user_id' not in session:
-        flash('Please login first', 'warning')
-        return redirect(url_for('auth.login'))
-
-    blogs = execute_query("SELECT * FROM Blog WHERE id = %s", (blog_id,), fetch=True)
-    if not blogs:
-        flash('Blog not found', 'danger')
-        return redirect(url_for('fahim.blogs'))
-
-    blog = blogs[0]
-
-    if blog['user_id'] != session['user_id']:
-        flash('Unauthorized access', 'danger')
-        return redirect(url_for('fahim.blogs'))
-
-    if request.method == 'POST':
-        title = request.form.get('title')
-        content = request.form.get('content')
-        image = request.files.get('image')
-
-        img_url = blog['img_url']
-
-        if image and image.filename != '':
-            filename = secure_filename(image.filename)
-            upload_path = os.path.join('app/static/uploads', filename)
-            image.save(upload_path)
-            img_url = f'/static/uploads/{filename}'
-
-        execute_query(
-            "UPDATE Blog SET title=%s, content=%s, img_url=%s WHERE id=%s",
-            (title, content, img_url, blog_id)
-        )
-
-        flash('Blog updated successfully!', 'success')
-        return redirect(url_for('fahim.blog_detail', blog_id=blog_id))
-
-    return render_template('edit_blog.html', blog=blog)
-
-
-# =========================
-# BLOG DELETE
-# =========================
-
-@fahim_bp.route('/blog/<int:blog_id>/delete', methods=['POST'])
-def delete_blog(blog_id):
-    if 'user_id' not in session:
-        flash('Please login first', 'warning')
-        return redirect(url_for('auth.login'))
-
-    blogs = execute_query("SELECT * FROM Blog WHERE id = %s", (blog_id,), fetch=True)
-    if not blogs:
-        flash('Blog not found', 'danger')
-        return redirect(url_for('fahim.blogs'))
-
-    blog = blogs[0]
-
-    if blog['user_id'] != session['user_id']:
-        flash('Unauthorized delete attempt', 'danger')
-        return redirect(url_for('fahim.blogs'))
-
-    execute_query("DELETE FROM Blog WHERE id = %s", (blog_id,))
-    flash('Blog deleted successfully!', 'success')
-    return redirect(url_for('fahim.blogs'))

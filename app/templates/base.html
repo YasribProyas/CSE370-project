@@ -2,11 +2,12 @@
 <html lang="en">
 
 <head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Havnhut{% endblock %}</title>
-    {{ bootstrap.load_css() }}
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
     <style>
         body {
             min-height: 100vh;
@@ -52,55 +53,33 @@
         }
     </style>
 </head>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <body>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('main.index') }}">
-                <i class="bi bi-heart-fill text-danger"></i> Havnhut
-            </a>
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">Havnhut</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.index') }}">
-                            <i class="bi bi-house"></i> Home
-                        </a>
+                        <a class="nav-link" href="{{ url_for('main.index') }}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.animals') }}">
-                            <i class="bi bi-list"></i> Animals
-                        </a>
+                        <a class="nav-link" href="{{ url_for('fahim.posts') }}">Posts</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('fahim.posts') }}">
-                            <i class="bi bi-newspaper"></i> Posts
-                        </a>
+                        <!-- ✅ FIXED HERE -->
+                        <a class="nav-link" href="{{ url_for('fahim.blogs') }}">Blogs</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('fahim.blogs') }}">
-                            <i class="bi bi-journal-text"></i> Blogs
-                        </a>
+                        <a class="nav-link" href="{{ url_for('shaj.donation') }}">Donations</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('shaj.donation') }}">
-                            <i class="bi bi-cash-coin"></i> Donations
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('shaj.consultants') }}">
-                            <i class="bi bi-calendar-check"></i> Consult
-                        </a>
-                    </li>
-
-                    <!-- n-->
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('shaj.my_consultations') }}">
-                            <i class="bi bi-calendar-event"></i> My Consultations
-                        </a>
+                        <a class="nav-link" href="#">Consult</a>
                     </li>
                 </ul>
                 <ul class="navbar-nav">
@@ -108,46 +87,25 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                             data-bs-toggle="dropdown">
-                            <i class="bi bi-person-circle"></i> {{ session.user_name }}
+                            {{ session.user_name }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
                             {% if session.is_admin %}
-                            <li><a class="dropdown-item" href="{{ url_for('proyas.admin_dashboard') }}">
-                                <i class="bi bi-speedometer2"></i> Admin Panel
-                            </a></li>
+                            <li><a class="dropdown-item" href="#">Admin Panel</a></li>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
                             {% endif %}
-                            <li><a class="dropdown-item" href="#">
-                                <i class="bi bi-person"></i> Profile
-                            </a></li>
-                            {% if not session.is_admin %}
-                            <li><a class="dropdown-item" href="{{ url_for('shaj.my_adoptions') }}">
-                                <i class="bi bi-heart"></i> My Adoptions
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('shaj.my_consultations') }}">
-                                <i class="bi bi-calendar-event"></i> My Appointments
-                            </a></li>
-                            {% endif %}
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">
-                                <i class="bi bi-box-arrow-right"></i> Logout
-                            </a></li>
+                            <li><a class="dropdown-item" href="#">Profile</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>
                         </ul>
                     </li>
                     {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('auth.login') }}">
-                            <i class="bi bi-box-arrow-in-right"></i> Login
-                        </a>
+                        <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>
                     </li>
                     <li class="nav-item">
-                        <a class="btn btn-primary btn-sm ms-2" href="{{ url_for('auth.register') }}">
-                            <i class="bi bi-person-plus"></i> Register
-                        </a>
+                        <a class="btn btn-primary btn-sm ms-2" href="{{ url_for('auth.register') }}">Register</a>
                     </li>
                     {% endif %}
                 </ul>
@@ -178,12 +136,9 @@
     <footer class="footer">
         <div class="container text-center">
             <p class="text-muted mb-0">&copy; 2025 Havnhut - Animal Adoption Platform</p>
-            <p class="text-muted small">Made with <i class="bi bi-heart-fill text-danger"></i> for animals in need</p>
         </div>
     </footer>
 
-    {{ bootstrap.load_js() }}
     {% block scripts %}{% endblock %}
 </body>
-
 </html>

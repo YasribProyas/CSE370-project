@@ -13,7 +13,7 @@
                 <div class="card text-white bg-success mb-3">
                     <div class="card-body text-center">
                         <h5 class="card-title">Total Donations Collected</h5>
-                        <h1 class="display-3">{{ "%.2f"|format(total_donations) }} ৳</h1>
+                        <h1 class="display-3">{{ "%.2f"|format(total_donations) }} taka</h1>
                         <p class="card-text">From {{ donation_count }} generous donors</p>
                     </div>
                 </div>
@@ -34,9 +34,7 @@
             <h4>Help Us Make a Difference!</h4>
             <p>Your donations help us provide food, shelter, and medical care for animals in need.</p>
             {% if session.user_id %}
-            <a href="{{ url_for('shaj.donate') }}" class="btn btn-success btn-lg">
-                <i class="bi bi-heart-fill"></i> Make a Donation
-            </a>
+            <button class="btn btn-success btn-lg">Make a Donation</button>
             {% else %}
             <a href="{{ url_for('auth.login') }}" class="btn btn-success btn-lg">Login to Donate</a>
             {% endif %}
@@ -69,7 +67,7 @@
                                     <em class="text-muted">Anonymous</em>
                                     {% endif %}
                                 </td>
-                                <td><span class="badge bg-success">{{ "%.2f"|format(donation.amount) }} ৳</span></td>
+                                <td><span class="badge bg-success">{{ "%.2f"|format(donation.amount) }} taka</span></td>
                                 <td>{{ donation.method or 'N/A' }}</td>
                                 <td><small class="text-muted">{{ donation.trx_id or 'N/A' }}</small></td>
                             </tr>

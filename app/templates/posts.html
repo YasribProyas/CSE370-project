@@ -1,61 +1,79 @@
 {% extends "base.html" %}
-
 {% block title %}Posts - Havnhut{% endblock %}
-
 {% block content %}
 <div class="row">
     <div class="col-12">
-        <h1 class="mb-4">Community Posts</h1>
+
+        <!-- Header + Admin Create Button -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="mb-0">Community Posts</h1>
+
+            {% if session.is_admin %}
+            <a href="{{ url_for('fahim.create_post') }}" class="btn btn-primary">
+                ➕ Create Post
+            </a>
+            {% endif %}
+        </div>
 
         {% if posts %}
         <div class="row g-4">
             {% for post in posts %}
             <div class="col-12">
-                <div class="card post-card">
+                <div class="card shadow-sm">
                     <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
+
+                        <!-- Author + Date -->
+                        <div class="d-flex justify-content-between align-items-start mb-2">
                             <div>
-                                <h5 class="card-title mb-1">{{ post.author_name or 'Admin' }}</h5>
-                                <p class="text-muted small mb-0">
-                                    {{ post.date }}
-                                    {% if post.time %}
-                                    • {{ post.time }}
-                                    {% endif %}
-                                </p>
+                                <strong>{{ post.author_name or 'Admin' }}</strong>
+                                {% if session.is_admin %}
+                                <span class="badge bg-success ms-2">Admin</span>
+                                {% endif %}
+                                <div class="text-muted small">
+                                    {{ post.date }} {% if post.time %}• {{ post.time }}{% endif %}
+                                </div>
                             </div>
-                            {% if session.is_admin %}
-                            <span class="badge bg-success">Admin Post</span>
-                            {% endif %}
                         </div>
 
+                        <!-- Image -->
                         {% if post.img_url %}
-                        <img src="{{ post.img_url }}" class="img-fluid rounded mb-3" alt="Post image"
-                            style="max-height: 400px; object-fit: cover; width: 100%;">
+                        <img src="{{ post.img_url }}"
+                             class="img-fluid rounded mb-3"
+                             style="max-height: 400px; object-fit: cover; width: 100%;">
                         {% endif %}
 
-                        <p class="card-text">{{ post.content }}</p>
+                        <!-- Content -->
+                        <p class="fs-6">{{ post.content }}</p>
 
-                        <div class="d-flex gap-3 mt-3">
-                            <span class="text-muted">
-                                <i class="bi bi-heart"></i> {{ post.like_count or 0 }} Likes
-                            </span>
-                            <span class="text-muted">
-                                <i class="bi bi-chat"></i> {{ post.comment_count or 0 }} Comments
-                            </span>
+                        <!-- Actions -->
+                        <div class="d-flex align-items-center gap-4 mt-3">
+
+                            <!-- Like -->
+                            <form method="POST"
+                                  action="{{ url_for('fahim.like_post', post_id=post.id) }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    ❤️ {{ post.like_count or 0 }}
+                                </button>
+                            </form>
+
+                            <!-- Comments -->
+                            <a href="{{ url_for('fahim.post_detail', post_id=post.id) }}"
+                               class="btn btn-sm btn-outline-secondary">
+                                💬 {{ post.comment_count or 0 }} Comments
+                            </a>
+
                         </div>
 
-                        <a href="{{ url_for('fahim.post_detail', post_id=post.id) }}"
-                            class="btn btn-primary btn-sm mt-3">View Details</a>
                     </div>
                 </div>
             </div>
             {% endfor %}
         </div>
+
         {% else %}
-        <div class="alert alert-info">
-            No posts available yet.
-        </div>
+        <div class="alert alert-info">No posts available yet.</div>
         {% endif %}
+
     </div>
 </div>
 {% endblock %}
