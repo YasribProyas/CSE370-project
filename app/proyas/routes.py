@@ -34,7 +34,6 @@ def admin_dashboard():
                                     WHERE u.id NOT IN (SELECT user_id FROM Admin) 
                                     AND u.id NOT IN (SELECT user_id FROM Consultant) LIMIT 10""", fetch=True)
     
-    # Get pending consultations
     consultations_query = """
         SELECT a.*, 
                u.name as user_name, 
@@ -51,11 +50,9 @@ def admin_dashboard():
     """
     pending_consultations = execute_query(consultations_query, fetch=True) or []
     
-    # Add time slot information
     for consultation in pending_consultations:
         consultation['slot_time'] = get_slot_time(consultation['timeslot_id'])
     
-    # Get pending adoption requests (not yet scheduled)
     adoptions_query = """
         SELECT a.*, an.title, an.breed, an.type, u.name as adopter_name, ad.full_name, ad.phone_no
         FROM Adopt a
@@ -356,7 +353,6 @@ def delete_notification(notification_id):
     
     user_id = session.get('user_id')
     
-    # Verify notification belongs to the user
     notification = execute_query(
         "SELECT * FROM Notification WHERE id = %s AND user_id = %s",
         (notification_id, user_id),
@@ -370,10 +366,8 @@ def delete_notification(notification_id):
     return jsonify({'success': True})
 
 
-# ============== CONSULTATION ROUTES ==============
 def get_slot_time(slot_number):
     """Convert slot number (1-6) to time range"""
-    # Handle None or empty string
     if not slot_number or slot_number == '':
         return "N/A"
     
@@ -411,7 +405,6 @@ def book_consultation(consultant_id):
         flash('Please login to book a consultation', 'warning')
         return redirect(url_for('auth.login'))
     
-    # Get consultant details
     consultant_query = """
         SELECT u.id, u.name, c.full_name, c.phone_no, c.address
         FROM User u
@@ -426,7 +419,6 @@ def book_consultation(consultant_id):
     
     consultant = consultant[0]
     
-    # Check if user is an adopter
     check_adopter = "SELECT * FROM Adopter WHERE user_id = %s"
     adopter = execute_query(check_adopter, (session['user_id'],), fetch=True)
     
@@ -434,13 +426,11 @@ def book_consultation(consultant_id):
         flash('Please complete your adopter profile before booking a consultation', 'info')
         return redirect(url_for('main.index'))
     
-    # Get available time slots for next 7 days
     available_slots = {}
     today = datetime.now().date()
     
     for i in range(7):
         date = today + timedelta(days=i)
-        # Get booked slots for this date and consultant
         booked_query = """
             SELECT timeslot_id FROM Appointment 
             WHERE consultant_id = %s AND date = %s
@@ -448,7 +438,6 @@ def book_consultation(consultant_id):
         booked = execute_query(booked_query, (consultant_id, date), fetch=True) or []
         booked_slot_ids = [str(b['timeslot_id']) for b in booked]
         
-        # Create slots 1-6
         slots = []
         for slot_num in range(1, 7):
             slot_id = slot_num
@@ -472,7 +461,6 @@ def book_consultation(consultant_id):
         method = request.form.get('method')
         trx_id = request.form.get('trx_id')
         
-        # Validate inputs
         if not all([selected_date, selected_slot, method]):
             flash('All fields are required', 'danger')
             return render_template('book_consultation.html', 
@@ -487,7 +475,6 @@ def book_consultation(consultant_id):
                                  available_slots=available_slots,
                                  adopter=adopter[0])
         
-        # Check if slot is still available
         check_slot = "SELECT * FROM Appointment WHERE consultant_id = %s AND date = %s AND timeslot_id = %s"
         existing = execute_query(check_slot, (consultant_id, selected_date, selected_slot), fetch=True)
         
@@ -498,8 +485,6 @@ def book_consultation(consultant_id):
                                  available_slots=available_slots,
                                  adopter=adopter[0])
         
-        # Get next appointment ID or use a combination key
-        # Since we're using composite primary key, we just insert
         insert_query = """
             INSERT INTO Appointment (adopter_id, consultant_id, timeslot_id, date, trx_id)
             VALUES (%s, %s, %s, %s, %s)
@@ -525,7 +510,6 @@ def my_consultations():
         flash('Please login first', 'warning')
         return redirect(url_for('auth.login'))
     
-    # If user is a consultant, show both consultations and adoption appointments
     is_consultant_query = "SELECT user_id FROM Consultant WHERE user_id = %s"
     is_consultant = execute_query(is_consultant_query, (session['user_id'],), fetch=True)
     
@@ -533,7 +517,6 @@ def my_consultations():
     adoptions = []
     
     if is_consultant:
-        # Get consultation bookings where user is the consultant (animal_id IS NULL)
         consult_query = """
             SELECT a.*, u.name as adopter_name, 'consultation' as type
             FROM Appointment a
@@ -543,7 +526,6 @@ def my_consultations():
         """
         consultations = execute_query(consult_query, (session['user_id'],), fetch=True) or []
         
-        # Get adoption appointments where user is the consultant (animal_id IS NOT NULL)
         adopt_query = """
             SELECT ap.*, an.title as animal_name, u.name as adopter_name, 'adoption' as type
             FROM Appointment ap
@@ -557,13 +539,11 @@ def my_consultations():
         """
         adoptions = execute_query(adopt_query, (session['user_id'],), fetch=True) or []
         
-        # Add time slot information to both
         for item in consultations:
             item['slot_time'] = get_slot_time(item['timeslot_id'])
         for item in adoptions:
             item['slot_time'] = get_slot_time(item['timeslot_id'])
     else:
-        # Regular adopter viewing their consultations (animal_id IS NULL)
         query = """
             SELECT a.*, u.name as consultant_name, c.full_name as consultant_full_name, 'consultation' as type
             FROM Appointment a
@@ -574,7 +554,6 @@ def my_consultations():
         """
         consultations = execute_query(query, (session['user_id'],), fetch=True) or []
         
-        # Add time slot information
         for consultation in consultations:
             consultation['slot_time'] = get_slot_time(consultation['timeslot_id'])
     
@@ -588,7 +567,6 @@ def cancel_consultation(consultant_id, consultation_date, slot_id):
         flash('Please login first', 'warning')
         return redirect(url_for('auth.login'))
     
-    # Check if consultation exists and belongs to user
     check_query = """
         SELECT * FROM Appointment 
         WHERE adopter_id = %s AND consultant_id = %s AND date = %s AND timeslot_id = %s
@@ -599,12 +577,10 @@ def cancel_consultation(consultant_id, consultation_date, slot_id):
         flash('Consultation not found', 'danger')
         return redirect(url_for('proyas.my_consultations'))
     
-    # Check if link is already set
     if consultation[0]['link'] and consultation[0]['link'] != '0':
         flash('Cannot cancel a consultation that has been confirmed with a meeting link', 'danger')
         return redirect(url_for('proyas.my_consultations'))
     
-    # Delete consultation
     delete_query = """
         DELETE FROM Appointment 
         WHERE adopter_id = %s AND consultant_id = %s AND date = %s AND timeslot_id = %s
@@ -638,7 +614,6 @@ def admin_consultations():
     """
     consultations = execute_query(query, fetch=True) or []
     
-    # Add time slot information
     for consultation in consultations:
         consultation['slot_time'] = get_slot_time(consultation['timeslot_id'])
     
@@ -655,7 +630,6 @@ def set_consultation_link(adopter_id, consultant_id, consultation_date, slot_id)
         flash('Meeting link is required', 'danger')
         return redirect(url_for('proyas.admin_consultations'))
     
-    # Update appointment with link
     update_query = """
         UPDATE Appointment 
         SET link = %s 
@@ -664,7 +638,6 @@ def set_consultation_link(adopter_id, consultant_id, consultation_date, slot_id)
     result = execute_query(update_query, (link, adopter_id, consultant_id, consultation_date, slot_id))
     
     if result is not None:
-        # Get user and consultant details for notification
         user_query = "SELECT id, name, email FROM User WHERE id = %s"
         user = execute_query(user_query, (adopter_id,), fetch=True)[0]
         
@@ -675,7 +648,6 @@ def set_consultation_link(adopter_id, consultant_id, consultation_date, slot_id)
         notification_date = datetime.strptime(consultation_date, '%Y-%m-%d')
         formatted_date = notification_date.strftime('%B %d, %Y')
         
-        # Create notification for user
         user_notif_title = "Consultation Confirmed!"
         user_notif_content = f"Your consultation with {consultant['name']} has been scheduled. Date: {formatted_date}, Time: {slot_time}. Meeting Link: {link}"
         
@@ -685,7 +657,6 @@ def set_consultation_link(adopter_id, consultant_id, consultation_date, slot_id)
         user_insert = "INSERT INTO Notification (id, title, content, user_id) VALUES (%s, %s, %s, %s)"
         execute_query(user_insert, (user_notif_id, user_notif_title, user_notif_content, adopter_id))
         
-        # Create notification for consultant
         consultant_notif_title = "New Consultation Scheduled!"
         consultant_notif_content = f"Consultation confirmed with {user['name']}. Date: {formatted_date}, Time: {slot_time}. Meeting Link: {link}"
         
@@ -702,7 +673,6 @@ def set_consultation_link(adopter_id, consultant_id, consultation_date, slot_id)
     return redirect(url_for('proyas.admin_consultations'))
 
 
-# ============== ADOPTION APPROVAL ROUTES ==============
 @proyas_bp.route('/adoptions/approve/<int:adopter_id>/<int:consultant_id>/<adoption_date>/<int:slot_id>', methods=['POST'])
 def approve_adoption(adopter_id, consultant_id, adoption_date, slot_id):
     """Consultant approves an adoption appointment"""
@@ -710,7 +680,6 @@ def approve_adoption(adopter_id, consultant_id, adoption_date, slot_id):
         flash('You do not have permission to approve this adoption', 'danger')
         return redirect(url_for('proyas.my_consultations'))
     
-    # Get the animal_id from the appointment
     appointment_query = """
         SELECT animal_id FROM Appointment
         WHERE adopter_id = %s AND consultant_id = %s AND date = %s AND timeslot_id = %s AND animal_id IS NOT NULL
@@ -723,7 +692,6 @@ def approve_adoption(adopter_id, consultant_id, adoption_date, slot_id):
     
     animal_id = appointment[0]['animal_id']
     
-    # Get adoption and appointment details
     adopt_query = """
         SELECT ad.animal_id, ad.adopter_id, u.name as adopter_name, an.title as animal_name
         FROM Adopt ad
@@ -738,12 +706,10 @@ def approve_adoption(adopter_id, consultant_id, adoption_date, slot_id):
         adopter_name = adoption[0]['adopter_name']
         animal_name = adoption[0]['animal_name']
         
-        # Update Adopt to approved
         update_query = "UPDATE Adopt SET approved = TRUE WHERE animal_id = %s AND adopter_id = %s"
         result = execute_query(update_query, (animal_id, adopter_id))
         
         if result is not None:
-            # Send notification to adopter
             notif_title = "Adoption Approved!"
             notif_content = f"Your adoption for {animal_name} has been approved! The meeting is scheduled as confirmed."
             
@@ -769,7 +735,6 @@ def reject_adoption(adopter_id, consultant_id, adoption_date, slot_id):
         flash('You do not have permission to reject this adoption', 'danger')
         return redirect(url_for('proyas.my_consultations'))
     
-    # Get the animal_id from the appointment
     appointment_query = """
         SELECT animal_id FROM Appointment
         WHERE adopter_id = %s AND consultant_id = %s AND date = %s AND timeslot_id = %s AND animal_id IS NOT NULL
@@ -782,7 +747,6 @@ def reject_adoption(adopter_id, consultant_id, adoption_date, slot_id):
     
     animal_id = appointment[0]['animal_id']
     
-    # Get adoption and appointment details
     adopt_query = """
         SELECT ad.animal_id, ad.adopter_id, u.name as adopter_name, an.title as animal_name
         FROM Adopt ad
@@ -797,16 +761,13 @@ def reject_adoption(adopter_id, consultant_id, adoption_date, slot_id):
         adopter_name = adoption[0]['adopter_name']
         animal_name = adoption[0]['animal_name']
         
-        # Delete the adoption request
         delete_query = "DELETE FROM Adopt WHERE animal_id = %s AND adopter_id = %s"
         result = execute_query(delete_query, (animal_id, adopter_id))
-        
-        # Delete the appointment
+
         appointment_delete = "DELETE FROM Appointment WHERE adopter_id = %s AND consultant_id = %s AND date = %s AND timeslot_id = %s"
         execute_query(appointment_delete, (adopter_id, consultant_id, adoption_date, slot_id))
         
         if result is not None:
-            # Send notification to adopter
             notif_title = "Adoption Request Rejected"
             notif_content = f"Your adoption request for {animal_name} has been rejected. Please contact admin for more information."
             
