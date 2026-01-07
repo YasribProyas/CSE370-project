@@ -266,7 +266,7 @@
                 </div>
                 <div class="modal-body" id="notificationModalBody"></div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" id="notificationDeleteBtn" onclick="deleteNotificationFromModal()">Delete</button>
+                    <!-- <button type="button" class="btn btn-danger" id="notificationDeleteBtn" onclick="deleteNotificationFromModal()">Delete</button> -->
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
@@ -297,7 +297,6 @@
                                 <div class="notification-item" style="cursor: pointer;" onclick="showNotificationModal(${notif.id}, '${notif.title}', '${notif.content}')">
                                     <div class="notification-item-title">${notif.title}</div>
                                     <div class="notification-item-content">${notif.content}</div>
-                                    <button class="notification-delete-btn" onclick="event.stopPropagation(); deleteNotification(${notif.id})">Delete</button>
                                 </div>
                             `;
                             notificationsList.appendChild(notifItem);
